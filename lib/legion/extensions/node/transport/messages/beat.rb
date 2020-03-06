@@ -12,8 +12,12 @@ module Legion::Extensions::Node::Transport::Messages
       5000
     end
 
+    def encrypt?
+      false
+    end
+
     def message
-      hash = { hostname: Socket.gethostname, pid: Process.pid, timestamp: Time.now }
+      hash = { hostname: Legion::Settings[:client][:hostname], pid: Process.pid, timestamp: Time.now }
       hash[:status] = @options[:status].nil? ? 'healthy' : @options[:status]
       hash
     end

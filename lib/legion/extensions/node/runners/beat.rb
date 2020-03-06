@@ -1,8 +1,13 @@
 module Legion::Extensions::Node::Runners
   module Beat
-    def self.beat(status: 'healthy', **opts)
-      Legion::Extensions::Node::Transport::Messages::Beat.new(status: status).publish
+    include Legion::Extensions::Helpers::Transport
+
+    def beat(status: 'healthy', **opts)
+      log.debug 'sending hearbeat'
+      messages::Beat.new(status: status).publish
       { success: true, status: status, **opts }
     end
+
+    include Legion::Extensions::Helpers::Lex
   end
 end
