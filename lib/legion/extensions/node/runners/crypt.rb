@@ -4,7 +4,7 @@ module Legion::Extensions::Node::Runners
 
     def self.push_public_key(**opts)
       log.debug 'push_public_key'
-      message_hash = { function: 'update_public_key', public_key: Legion::Crypt.public_key.to_s, **Legion::Settings[:client] }
+      message_hash = { function: 'update_public_key', public_key: Base64.encode64(Legion::Crypt.public_key), **Legion::Settings[:client] }
       Legion::Extensions::Node::Transport::Messages::PublicKey.new(message_hash).publish
       { }
     end

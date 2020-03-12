@@ -4,7 +4,15 @@ module Legion::Extensions::Node::Actor
       'beat'
     end
 
-    def use_runner
+    def use_runner?
+      false
+    end
+
+    def check_subtask?
+      false
+    end
+
+    def generate_task?
       false
     end
 
