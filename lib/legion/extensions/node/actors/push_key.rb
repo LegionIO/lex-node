@@ -9,6 +9,18 @@ module Legion::Extensions::Node::Actor
     end
 
     def disabled?
+      true
+    end
+
+    def use_runner?
+      true
+    end
+
+    def check_subtask?
+      false
+    end
+
+    def generate_task?
       false
     end
   end
