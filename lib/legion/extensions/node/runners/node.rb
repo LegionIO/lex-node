@@ -17,22 +17,25 @@ module Legion::Extensions::Node::Runners
       end
     end
 
-    def self.push_public_key(**opts)
+    def self.push_public_key(**_opts)
       log.debug 'push_public_key'
-      message_hash = { function: 'update_public_key', public_key: Legion::Crypt.public_key.to_s, **Legion::Settings[:client] }
+      message_hash = { function:   'update_public_key',
+                       public_key: Legion::Crypt.public_key.to_s,
+                       **Legion::Settings[:client] }
       Legion::Extensions::Node::Transport::Messages::PublicKey.new(message_hash).publish
-      { }
+      {}
     end
-    #
-    def self.update_public_key(name:, public_key:, **opts)
+
+    def self.update_public_key(name:, public_key:, **_opts)
       log.debug 'update_public_key'
       Legion::Settings[:cluster][:public_keys][name] = public_key
       {}
     end
 
-    def self.receive_cluster_secret(public_key:, message:, **opts)
+    def self.receive_cluster_secret(public_key:, message:, **_opts)
       log.debug 'receive_cluster_secret'
-      Legion::Settings[:crypt][:cluster_secret] = Legion::Crypt.decrypt_from_keypair(public_key: public_key, message: message)
+      Legion::Settings[:crypt][:cluster_secret] = Legion::Crypt.decrypt_from_keypair(public_key: public_key,
+                                                                                     message:    message)
       {}
     end
   end

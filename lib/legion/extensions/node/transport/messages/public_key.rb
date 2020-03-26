@@ -9,7 +9,7 @@ module Legion::Extensions::Node::Transport::Messages
     end
 
     def validate
-      raise 'public_key should be a string'  unless @options[:public_key].is_a?(String)
+      raise 'public_key should be a string' unless @options[:public_key].is_a?(String)
 
       @valid = true
     end
