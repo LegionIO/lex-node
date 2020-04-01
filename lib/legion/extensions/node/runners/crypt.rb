@@ -4,7 +4,7 @@ module Legion::Extensions::Node::Runners
 
     def self.push_public_key(**_opts)
       log.debug 'push_public_key'
-      message_hash = { function:   'update_public_key',
+      message_hash = { function: 'update_public_key',
                        public_key: Base64.encode64(Legion::Crypt.public_key),
                        **Legion::Settings[:client] }
       Legion::Extensions::Node::Transport::Messages::PublicKey.new(message_hash).publish
@@ -41,12 +41,12 @@ module Legion::Extensions::Node::Runners
       return {} unless Legion::Settings[:crypt][:cs_encrypt_ready]
 
       encrypted = Legion::Crypt.encrypt_from_keypair(public_key: public_key,
-                                                     message:    Legion::Settings[:crypt][:cluster_secret].to_s)
+                                                     message: Legion::Settings[:crypt][:cluster_secret].to_s)
       legion = Legion::Crypt.encrypt('legion')
-      Legion::Extensions::Node::Transport::Messages::PushClusterSecret.new(message:           encrypted,
-                                                                           queue_name:        queue_name,
+      Legion::Extensions::Node::Transport::Messages::PushClusterSecret.new(message: encrypted,
+                                                                           queue_name: queue_name,
                                                                            validation_string: 'legion',
-                                                                           encrypted_string:  legion).publish
+                                                                           encrypted_string: legion).publish
       {}
     end
 

@@ -3,5 +3,9 @@ module Legion::Extensions::Node::Actor
     def delay_start
       2
     end
+
+    def runner_class
+      Legion::Extensions::Node::Actor::Crypt
+    end
   end
 end
