@@ -1,0 +1,17 @@
+image: ruby:2.7.0
+
+pipelines:
+  tags:
+    "v*":
+      - step:
+          name: Push to RubyGems
+          deployment: RubyGems
+          script:
+            - gem install bundler gem-release rake rspec
+            - bundle install
+            - rake build
+            - mkdir .gem
+            - (umask  077 ; echo $gem_creds | base64 --decode > .gem/credentials)
+            - gem release
+          artifacts:
+            - pkg/**

@@ -6,13 +6,6 @@ Metrics/ClassLength:
   Max: 1500
 Metrics/BlockLength:
   Max: 50
-Layout/SpaceAroundEqualsInParameterDefault:
-  EnforcedStyle: space
-Style/SymbolArray:
-  Enabled: true
-Layout/HashAlignment:
-  EnforcedHashRocketStyle: table
-  EnforcedColonStyle: table
 Style/Documentation:
   Enabled: false
 AllCops:

@@ -1,11 +1,12 @@
 version: 2.1
 orbs:
   ruby: circleci/ruby@0.2.1
+  sonarcloud: sonarsource/sonarcloud@1.0.1
 
 jobs:
   "rubocop":
     docker:
-      - image: circleci/ruby:2.5-node
+      - image: circleci/ruby:2.7-node
     steps:
       - checkout
       - ruby/load-cache
@@ -17,32 +18,48 @@ jobs:
   "ruby-two-five":
     docker:
       - image: circleci/ruby:2.5
-      - image: memcached:1.5-alpine
     steps:
       - checkout
       - ruby/load-cache
+      - run:
+          name: update bundler
+          command: gem update bundler
       - ruby/install-deps
       - ruby/run-tests
       - ruby/save-cache
   "ruby-two-six":
     docker:
       - image: circleci/ruby:2.6
-      - image: memcached:1.5-alpine
     steps:
       - checkout
       - ruby/load-cache
+      - run:
+          name: update bundler
+          command: gem update bundler
       - ruby/install-deps
       - ruby/run-tests
       - ruby/save-cache
   "ruby-two-seven":
     docker:
       - image: circleci/ruby:2.7
-      - image: memcached:1.5-alpine
     steps:
       - checkout
       - ruby/load-cache
       - ruby/install-deps
       - ruby/run-tests
+      - ruby/save-cache
+  "sonarcloud":
+    docker:
+      - image: circleci/ruby:2.7
+    steps:
+      - checkout
+      - ruby/load-cache
+      - ruby/install-deps
+      - ruby/run-tests
+      - run:
+          name: Run Rubocop
+          command: bundle exec rubocop --format=json --out=rubocop-result.json
+      - sonarcloud/scan
       - ruby/save-cache
 
 workflows:
@@ -59,3 +76,7 @@ workflows:
       - ruby-two-seven:
           requires:
             - ruby-two-five
+      - sonarcloud:
+          requires:
+            - ruby-two-seven
+            - ruby-two-six
