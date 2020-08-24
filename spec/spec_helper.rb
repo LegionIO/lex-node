@@ -2,7 +2,6 @@ require 'simplecov'
 SimpleCov.start
 
 require 'bundler/setup'
-require 'legion/extensions/node'
 
 RSpec.configure do |config|
   config.example_status_persistence_file_path = '.rspec_status'

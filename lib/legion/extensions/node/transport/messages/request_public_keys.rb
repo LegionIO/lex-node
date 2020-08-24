@@ -8,6 +8,10 @@ module Legion::Extensions::Node::Transport::Messages
       'task'
     end
 
+    def encrypt?
+      false
+    end
+
     def validate
       @valid = true
     end

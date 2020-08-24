@@ -9,7 +9,7 @@ module Legion::Extensions::Node::Actor
     end
 
     def disabled?
-      true
+      false
     end
 
     def use_runner?

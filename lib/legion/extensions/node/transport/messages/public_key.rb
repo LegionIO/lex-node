@@ -8,6 +8,10 @@ module Legion::Extensions::Node::Transport::Messages
       'task'
     end
 
+    def encrypt?
+      false
+    end
+
     def validate
       raise 'public_key should be a string' unless @options[:public_key].is_a?(String)
 

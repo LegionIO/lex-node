@@ -40,7 +40,7 @@ module Legion::Extensions::Node::Runners
       log.debug 'push_cluster_secret'
       return {} unless Legion::Settings[:crypt][:cs_encrypt_ready]
 
-      encrypted = Legion::Crypt.encrypt_from_keypair(public_key: public_key,
+      encrypted = Legion::Crypt.encrypt_from_keypair(pub_key: public_key,
                                                      message: Legion::Settings[:crypt][:cluster_secret].to_s)
       legion = Legion::Crypt.encrypt('legion')
       Legion::Extensions::Node::Transport::Messages::PushClusterSecret.new(message: encrypted,
@@ -50,10 +50,9 @@ module Legion::Extensions::Node::Runners
       {}
     end
 
-    def self.receive_cluster_secret(public_key:, message:, **opts)
+    def self.receive_cluster_secret(message:, **opts)
       log.debug 'receive_cluster_secret'
-      log.debug opts
-      Legion::Settings[:crypt][:cluster_secret] = Legion::Crypt.decrypt_from_keypair(public_key, message)
+      Legion::Settings[:crypt][:cluster_secret] = Legion::Crypt.decrypt_from_keypair(message)
       Legion::Settings[:crypt][:encrypted_string] = opts[:encrypted_string]
       Legion::Settings[:crypt][:validation_string] = opts[:validation_string]
       {}
