@@ -1,5 +1,3 @@
-require 'legion/transport/exchanges/node'
-
 module Legion::Extensions::Node
   module Transport
     module Exchanges

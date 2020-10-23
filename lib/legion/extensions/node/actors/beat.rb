@@ -21,7 +21,7 @@ module Legion::Extensions::Node::Actor
     end
 
     def time
-      1
+      10
     end
   end
 end

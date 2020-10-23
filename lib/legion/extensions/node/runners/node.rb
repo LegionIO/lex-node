@@ -1,8 +1,6 @@
 module Legion::Extensions::Node::Runners
   module Node
-    include Legion::Extensions::Helpers::Lex
-
-    def self.message(_options = {}, **hash)
+    def message(_options = {}, **hash)
       log.debug 'message'
       hash.each do |k, v|
         raise 'Cannot override base setting that doesn\'t exist' if Legion::Settings[k].nil?
@@ -18,7 +16,7 @@ module Legion::Extensions::Node::Runners
       end
     end
 
-    def self.push_public_key(**_opts)
+    def push_public_key(**_opts)
       log.debug 'push_public_key'
       message_hash = { function: 'update_public_key',
                        public_key: Legion::Crypt.public_key.to_s,
@@ -27,13 +25,13 @@ module Legion::Extensions::Node::Runners
       {}
     end
 
-    def self.update_public_key(name:, public_key:, **_opts)
+    def update_public_key(name:, public_key:, **_opts)
       log.debug 'update_public_key'
       Legion::Settings[:cluster][:public_keys][name] = public_key
       {}
     end
 
-    def self.push_cluster_secret(public_key:, queue_name:, **_opts)
+    def push_cluster_secret(public_key:, queue_name:, **_opts)
       log.debug 'push_cluster_secret'
       return {} unless Legion::Settings[:crypt][:cs_encrypt_ready]
 
@@ -47,10 +45,12 @@ module Legion::Extensions::Node::Runners
       {}
     end
 
-    def self.receive_cluster_secret(message:, **_opts)
+    def receive_cluster_secret(message:, **_opts)
       log.debug 'receive_cluster_secret'
       Legion::Settings[:crypt][:cluster_secret] = Legion::Crypt.decrypt_from_keypair(message: message)
       {}
     end
+
+    include Legion::Extensions::Helpers::Lex
   end
 end
