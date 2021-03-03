@@ -24,7 +24,7 @@ module Legion::Extensions::Node::Runners
     def request_public_keys(**_opts)
       log.debug 'request_public_keys'
       message_hash = { function: 'push_public_key' }
-      Legion::Extensions::Node::Transport::Messages::RequestPublicKeys.new(message_hash).publish
+      Legion::Extensions::Node::Transport::Messages::RequestPublicKeys.new(**message_hash).publish
       {}
     end
 

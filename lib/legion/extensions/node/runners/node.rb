@@ -21,7 +21,7 @@ module Legion::Extensions::Node::Runners
       message_hash = { function: 'update_public_key',
                        public_key: Legion::Crypt.public_key.to_s,
                        **Legion::Settings[:client] }
-      Legion::Extensions::Node::Transport::Messages::PublicKey.new(message_hash).publish
+      Legion::Extensions::Node::Transport::Messages::PublicKey.new(**message_hash).publish
       {}
     end
 
