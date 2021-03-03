@@ -51,6 +51,11 @@ module Legion::Extensions::Node::Runners
       {}
     end
 
+    def receive_vault_token(message:, routing_key:, public_key:, **)
+      Legion::Extensions::Node::Runners::Vault.receive_vault_token(message: message, routing_key: routing_key,
+                                                                   public_key: public_key)
+    end
+
     include Legion::Extensions::Helpers::Lex
   end
 end
