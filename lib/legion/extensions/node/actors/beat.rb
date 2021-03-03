@@ -23,6 +23,5 @@ module Legion::Extensions::Node::Actor
     def time
       settings['beat_interval']
     end
-    end
   end
 end
