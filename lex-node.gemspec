@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = 'Does Legion Node things'
   spec.description   = 'This lex is responsible for sending heartbeats, and allowing for dynamic confgs'
-  spec.homepage      = 'https://bitbucket.org/legion-io/lex-node/CHANGELOG.md'
+  spec.homepage      = 'https://bitbucket.org/legion-io/lex-node/'
   spec.license       = 'MIT'
   spec.required_ruby_version = Gem::Requirement.new('>= 2.5.0')
 
