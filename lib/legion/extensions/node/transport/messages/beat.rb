@@ -1,7 +1,7 @@
 module Legion::Extensions::Node::Transport::Messages
   class Beat < Legion::Transport::Message
     def routing_key
-      'health'
+      'status'
     end
 
     def type
@@ -17,7 +17,7 @@ module Legion::Extensions::Node::Transport::Messages
     end
 
     def message
-      hash = { hostname: Legion::Settings[:client][:hostname], pid: Process.pid, timestamp: Time.now }
+      hash = { name: Legion::Settings[:client][:hostname], pid: Process.pid, timestamp: Time.now }
       hash[:status] = @options[:status].nil? ? 'healthy' : @options[:status]
       hash
     end

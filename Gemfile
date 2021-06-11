@@ -1,4 +1,10 @@
 source 'https://rubygems.org'
-
-# Specify your gem's dependencies in legion-extensions-node.gemspec
 gemspec
+
+group :test do
+  gem 'rake'
+  gem 'rspec'
+  gem 'rspec_junit_formatter'
+  gem 'rubocop'
+  gem 'simplecov'
+end

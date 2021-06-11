@@ -9,15 +9,12 @@ module Legion::Extensions::Node::Transport::Messages
     end
 
     def message
-      data =
-        { function: 'receive_vault_token',
+        {
+          function: 'receive_vault_token',
           runner_class: 'Legion::Extensions::Node::Runners::Vault',
           message: @options[:token],
-          public_key: Base64.encode64(Legion::Crypt.public_key) }
-
-      Legion::Logging.unknown data
-      Legion::Logging.unknown routing_key
-      data
+          public_key: Base64.encode64(Legion::Crypt.public_key)
+        }
     end
 
     def type
