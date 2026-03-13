@@ -1,27 +1,35 @@
-module Legion::Extensions::Node::Actor
-  class Vault < Legion::Extensions::Actors::Subscription
-    # def delay_start
-    #   2
-    # end
+# frozen_string_literal: true
 
-    def runner_class
-      Legion::Extensions::Node::Runners::Vault
-    end
+module Legion
+  module Extensions
+    module Node
+      module Actor
+        class Vault < Legion::Extensions::Actors::Subscription
+          # def delay_start
+          #   2
+          # end
 
-    def disabled?
-      false
-    end
+          def runner_class
+            Legion::Extensions::Node::Runners::Vault
+          end
 
-    def use_runner?
-      true
-    end
+          def disabled?
+            false
+          end
 
-    def check_subtask?
-      false
-    end
+          def use_runner?
+            true
+          end
 
-    def generate_task?
-      false
+          def check_subtask?
+            false
+          end
+
+          def generate_task?
+            false
+          end
+        end
+      end
     end
   end
 end

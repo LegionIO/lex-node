@@ -1,27 +1,35 @@
-module Legion::Extensions::Node::Actor
-  class PushKey < Legion::Extensions::Actors::Once
-    def function
-      'request_public_keys'
-    end
+# frozen_string_literal: true
 
-    def runner_class
-      Legion::Extensions::Node::Runners::Crypt
-    end
+module Legion
+  module Extensions
+    module Node
+      module Actor
+        class PushKey < Legion::Extensions::Actors::Once
+          def function
+            'request_public_keys'
+          end
 
-    def disabled?
-      false
-    end
+          def runner_class
+            Legion::Extensions::Node::Runners::Crypt
+          end
 
-    def use_runner?
-      true
-    end
+          def disabled?
+            false
+          end
 
-    def check_subtask?
-      false
-    end
+          def use_runner?
+            true
+          end
 
-    def generate_task?
-      false
+          def check_subtask?
+            false
+          end
+
+          def generate_task?
+            false
+          end
+        end
+      end
     end
   end
 end

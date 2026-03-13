@@ -1,27 +1,35 @@
-module Legion::Extensions::Node::Actor
-  class Beat < Legion::Extensions::Actors::Every
-    def runner_function
-      'beat'
-    end
+# frozen_string_literal: true
 
-    def use_runner?
-      false
-    end
+module Legion
+  module Extensions
+    module Node
+      module Actor
+        class Beat < Legion::Extensions::Actors::Every
+          def runner_function
+            'beat'
+          end
 
-    def check_subtask?
-      false
-    end
+          def use_runner?
+            false
+          end
 
-    def generate_task?
-      false
-    end
+          def check_subtask?
+            false
+          end
 
-    def run_now?
-      true
-    end
+          def generate_task?
+            false
+          end
 
-    def time
-      settings['beat_interval']
+          def run_now?
+            true
+          end
+
+          def time
+            settings['beat_interval']
+          end
+        end
+      end
     end
   end
 end

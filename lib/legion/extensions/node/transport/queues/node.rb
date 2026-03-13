@@ -1,13 +1,23 @@
+# frozen_string_literal: true
+
 require 'socket'
 
-module Legion::Extensions::Node::Transport::Queues
-  class Node < Legion::Transport::Queue
-    def queue_name
-      "node.#{Legion::Settings[:client][:name]}"
-    end
+module Legion
+  module Extensions
+    module Node
+      module Transport
+        module Queues
+          class Node < Legion::Transport::Queue
+            def queue_name
+              "node.#{Legion::Settings[:client][:name]}"
+            end
 
-    def queue_options
-      { durable: false, exclusive: true, auto_delete: true }
+            def queue_options
+              { durable: false, exclusive: true, auto_delete: true }
+            end
+          end
+        end
+      end
     end
   end
 end

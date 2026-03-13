@@ -1,27 +1,35 @@
-module Legion::Extensions::Node::Actor
-  class VaultTokenRequest < Legion::Extensions::Actors::Once
-    def runner_function
-      'request_token'
-    end
+# frozen_string_literal: true
 
-    def runner_class
-      Legion::Extensions::Node::Runners::Vault
-    end
+module Legion
+  module Extensions
+    module Node
+      module Actor
+        class VaultTokenRequest < Legion::Extensions::Actors::Once
+          def runner_function
+            'request_token'
+          end
 
-    def use_runner?
-      false
-    end
+          def runner_class
+            Legion::Extensions::Node::Runners::Vault
+          end
 
-    def check_subtask?
-      false
-    end
+          def use_runner?
+            false
+          end
 
-    def generate_task?
-      false
-    end
+          def check_subtask?
+            false
+          end
 
-    def delay
-      0
+          def generate_task?
+            false
+          end
+
+          def delay
+            0
+          end
+        end
+      end
     end
   end
 end

@@ -1,23 +1,33 @@
-module Legion::Extensions::Node::Transport::Messages
-  class RequestClusterSecret < Legion::Transport::Message
-    def routing_key
-      'node.crypt.push_cluster_secret'
-    end
+# frozen_string_literal: true
 
-    def message
-      { function: 'push_cluster_secret', node_name: Legion::Settings[:client][:name] }
-    end
+module Legion
+  module Extensions
+    module Node
+      module Transport
+        module Messages
+          class RequestClusterSecret < Legion::Transport::Message
+            def routing_key
+              'node.crypt.push_cluster_secret'
+            end
 
-    def type
-      'task'
-    end
+            def message
+              { function: 'push_cluster_secret', node_name: Legion::Settings[:client][:name] }
+            end
 
-    def encrypt?
-      false
-    end
+            def type
+              'task'
+            end
 
-    def validate
-      @valid = true
+            def encrypt?
+              false
+            end
+
+            def validate
+              @valid = true
+            end
+          end
+        end
+      end
     end
   end
 end

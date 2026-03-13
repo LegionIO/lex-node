@@ -1,9 +1,12 @@
-# Legion::Extensions::Node
+# lex-node
 
+Node identity and cluster management for [LegionIO](https://github.com/LegionIO/LegionIO). Handles heartbeat broadcasting, cluster secret exchange, Vault token management, and public key distribution between nodes.
+
+This is a core LEX installed by default with LegionIO.
 
 ## Installation
 
-This LEX is installed into LegionIO by default. You can disable it with the following setting
+Installed automatically as a dependency of `legionio`. To disable:
 
 ```json
 {
@@ -15,10 +18,18 @@ This LEX is installed into LegionIO by default. You can disable it with the foll
 }
 ```
 
-## Usage
+## Functions
 
-This is used by default and you shouldn't have to do anything special to use it
+- **Beat** - Periodic heartbeat broadcast to cluster
+- **Vault** - Vault token lifecycle management
+- **VaultTokenRequest** - Handle incoming Vault token requests
+- **PublicKey/ClusterSecret** - Inter-node encryption key exchange
+
+## Requirements
+
+- Ruby >= 3.4
+- [LegionIO](https://github.com/LegionIO/LegionIO) framework
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+MIT

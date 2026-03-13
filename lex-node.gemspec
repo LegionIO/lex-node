@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'lib/legion/extensions/node/version'
 
 Gem::Specification.new do |spec|
@@ -10,13 +12,14 @@ Gem::Specification.new do |spec|
   spec.description   = 'This lex is responsible for sending heartbeats, allowing for dynamic config, cluster secret, etc'
   spec.homepage      = 'https://github.com/LegionIO/lex-node'
   spec.license       = 'MIT'
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.5.0')
+  spec.required_ruby_version = '>= 3.4'
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = 'https://github.com/LegionIO/lex-node'
   spec.metadata['documentation_uri'] = 'https://github.com/LegionIO/lex-node'
   spec.metadata['changelog_uri'] = 'https://github.com/LegionIO/lex-node'
   spec.metadata['bug_tracker_uri'] = 'https://github.com/LegionIO/lex-node/issues'
+  spec.metadata['rubygems_mfa_required'] = 'true'
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
     `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }

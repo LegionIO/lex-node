@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Sequel.migration do
   up do
     run "
@@ -20,4 +22,3 @@ Sequel.migration do
     drop_table :node_extensions
   end
 end
-
