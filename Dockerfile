@@ -6,4 +6,4 @@ RUN apk update && apk add build-base tzdata gcc git
 
 COPY . ./
 RUN gem install lex-elastic_app_search --no-document --no-prerelease
-CMD ruby --jit $(which legionio)
+CMD ruby --yjit $(which legionio)
