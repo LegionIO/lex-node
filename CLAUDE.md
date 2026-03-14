@@ -19,17 +19,17 @@ Legion::Extensions::Node
 ├── Actors/
 │   ├── Beat                # Periodic heartbeat broadcast
 │   ├── Crypt               # Cryptographic key exchange actor
-│   ├── PushKey             # Public key distribution actor
+│   ├── PushKey             # Once actor: calls request_public_keys on startup
 │   ├── Vault               # Vault token lifecycle management
-│   └── VaultTokenRequest   # Handles incoming Vault token requests
+│   └── VaultTokenRequest   # Once actor: calls 'request_token' on Vault runner (note: method mismatch - actual runner method is request_vault_token)
 ├── Runners/
 │   ├── Beat                # beat: publishes heartbeat message with node status
-│   ├── Crypt               # RSA key exchange: push_public_key, update_public_key,
-│   │                       #   delete_public_key, request_public_keys,
-│   │                       #   push_cluster_secret, request_cluster_secret, receive_cluster_secret
+│   ├── Crypt               # RSA key exchange: push_public_key, delete_public_key,
+│   │                       #   request_public_keys, push_cluster_secret,
+│   │                       #   request_cluster_secret, receive_cluster_secret
 │   ├── Node                # Dynamic config: message, push_public_key, update_public_key,
 │   │                       #   push_cluster_secret, receive_cluster_secret, receive_vault_token
-│   └── Vault               # Vault: request_token, request_vault_token,
+│   └── Vault               # Vault: request_vault_token,
 │                           #   receive_vault_token, push_vault_token
 ├── Transport/
 │   ├── Exchanges/Node      # Node communication exchange
