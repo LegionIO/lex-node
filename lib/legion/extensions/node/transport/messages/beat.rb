@@ -23,7 +23,7 @@ module Legion
             end
 
             def message
-              hash = { name: Legion::Settings[:client][:hostname], pid: Process.pid, timestamp: Time.now }
+              hash = { name: Legion::Settings[:client][:hostname], pid: ::Process.pid, timestamp: Time.now }
               hash[:status] = @options[:status].nil? ? 'healthy' : @options[:status]
               hash
             end
