@@ -67,6 +67,7 @@ RSpec.describe Legion::Extensions::Node::Runners::Node do
       def log
         @log ||= Class.new do
           def debug(*); end
+          def error(*); end
         end.new
       end
     end

@@ -21,6 +21,20 @@ module Legion
             end
           end
 
+          def update_gem(extension:, version: nil, reload: true, **_opts)
+            name = extension.to_s.delete_prefix('lex-')
+            gem_name = "lex-#{name}"
+            log.debug "update_gem: installing #{gem_name} #{version || 'latest'}"
+
+            Gem.install(gem_name, version)
+            Legion.reload if reload
+
+            publish_update_result(action: 'update_gem', status: 'success', detail: "#{gem_name} #{version || 'latest'}")
+          rescue StandardError => e
+            log.error "update_gem failed: #{e.message}"
+            publish_update_result(action: 'update_gem', status: 'failed', detail: gem_name, error: e.message)
+          end
+
           def push_public_key(**_opts)
             log.debug 'push_public_key'
             message_hash = { function:   'update_public_key',
@@ -59,6 +73,19 @@ module Legion
           def receive_vault_token(message:, routing_key:, public_key:, **)
             Legion::Extensions::Node::Runners::Vault.receive_vault_token(message: message, routing_key: routing_key,
                                                                          public_key: public_key)
+          end
+
+          private
+
+          def publish_update_result(action:, status:, detail: nil, error: nil)
+            Legion::Extensions::Node::Transport::Messages::UpdateResult.new(
+              action:    action,
+              status:    status,
+              detail:    detail,
+              error:     error,
+              node:      Legion::Settings[:client][:name],
+              timestamp: Time.now.utc.iso8601
+            ).publish
           end
 
           include Legion::Extensions::Helpers::Lex
