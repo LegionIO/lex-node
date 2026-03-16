@@ -35,6 +35,28 @@ module Legion
             publish_update_result(action: 'update_gem', status: 'failed', detail: gem_name, error: e.message)
           end
 
+          def update_settings(settings:, restart: false, **_opts)
+            log.debug "update_settings: merging #{settings.keys.join(', ')}"
+
+            settings.each do |k, v|
+              case v
+              when Hash
+                Legion::Settings[k] ||= {}
+                v.each { |key, value| Legion::Settings[k][key] = value }
+              else
+                Legion::Settings[k] = v
+              end
+            end
+
+            Legion.reload if restart
+
+            publish_update_result(action: 'update_settings', status: 'success',
+                                  detail: "keys: #{settings.keys.join(', ')}")
+          rescue StandardError => e
+            log.error "update_settings failed: #{e.message}"
+            publish_update_result(action: 'update_settings', status: 'failed', error: e.message)
+          end
+
           def push_public_key(**_opts)
             log.debug 'push_public_key'
             message_hash = { function:   'update_public_key',
