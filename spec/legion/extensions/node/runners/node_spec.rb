@@ -21,6 +21,11 @@ module Legion
             def initialize(**); end
             def publish; end
           end unless defined?(Legion::Extensions::Node::Transport::Messages::PushClusterSecret)
+
+          class UpdateResult
+            def initialize(**); end
+            def publish; end
+          end unless defined?(Legion::Extensions::Node::Transport::Messages::UpdateResult)
         end
       end
 
@@ -47,6 +52,8 @@ module Legion
   module Logging
     def self.debug(*); end
   end unless defined?(Legion::Logging)
+
+  def self.reload; end unless respond_to?(:reload)
 end
 
 require 'legion/extensions/node/runners/node'
@@ -191,6 +198,69 @@ RSpec.describe Legion::Extensions::Node::Runners::Node do
         message: 'ENC', routing_key: 'node.vault', public_key: 'PK'
       )
       runner.receive_vault_token(message: 'ENC', routing_key: 'node.vault', public_key: 'PK')
+    end
+  end
+
+  describe '#update_gem' do
+    before do
+      @settings_store[:client] = { name: 'test-node' }
+      allow(Gem).to receive(:install)
+      allow(Legion).to receive(:reload)
+      allow(Legion::Extensions::Node::Transport::Messages::UpdateResult).to receive(:new).and_return(
+        instance_double(Legion::Extensions::Node::Transport::Messages::UpdateResult, publish: nil)
+      )
+    end
+
+    it 'calls Gem.install with the normalized extension name and version' do
+      runner.update_gem(extension: 'github', version: '0.3.0')
+      expect(Gem).to have_received(:install).with('lex-github', '0.3.0')
+    end
+
+    it 'normalizes extension name that already has lex- prefix' do
+      runner.update_gem(extension: 'lex-github', version: '0.3.0')
+      expect(Gem).to have_received(:install).with('lex-github', '0.3.0')
+    end
+
+    it 'passes nil version for latest' do
+      runner.update_gem(extension: 'github')
+      expect(Gem).to have_received(:install).with('lex-github', nil)
+    end
+
+    it 'calls Legion.reload when reload is true' do
+      runner.update_gem(extension: 'github', reload: true)
+      expect(Legion).to have_received(:reload)
+    end
+
+    it 'does not call Legion.reload when reload is false' do
+      runner.update_gem(extension: 'github', reload: false)
+      expect(Legion).not_to have_received(:reload)
+    end
+
+    it 'publishes a success result message' do
+      expect(Legion::Extensions::Node::Transport::Messages::UpdateResult).to receive(:new).with(
+        hash_including(action: 'update_gem', status: 'success')
+      ).and_return(instance_double(Legion::Extensions::Node::Transport::Messages::UpdateResult, publish: nil))
+      runner.update_gem(extension: 'github', version: '0.3.0')
+    end
+
+    context 'when Gem.install raises an error' do
+      before { allow(Gem).to receive(:install).and_raise(Gem::InstallError, 'network timeout') }
+
+      it 'does not crash' do
+        expect { runner.update_gem(extension: 'github') }.not_to raise_error
+      end
+
+      it 'does not call Legion.reload' do
+        runner.update_gem(extension: 'github')
+        expect(Legion).not_to have_received(:reload)
+      end
+
+      it 'publishes a failure result message' do
+        expect(Legion::Extensions::Node::Transport::Messages::UpdateResult).to receive(:new).with(
+          hash_including(action: 'update_gem', status: 'failed', error: 'network timeout')
+        ).and_return(instance_double(Legion::Extensions::Node::Transport::Messages::UpdateResult, publish: nil))
+        runner.update_gem(extension: 'github')
+      end
     end
   end
 end
