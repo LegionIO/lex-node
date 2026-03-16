@@ -264,5 +264,53 @@ RSpec.describe Legion::Extensions::Node::Runners::Node do
       end
     end
   end
+
+  describe '#update_settings' do
+    before do
+      @settings_store[:client] = { name: 'test-node' }
+      @settings_store[:transport] = { host: 'old-host', port: 5672 }
+      allow(Legion).to receive(:reload)
+      allow(Legion::Extensions::Node::Transport::Messages::UpdateResult).to receive(:new).and_return(
+        instance_double(Legion::Extensions::Node::Transport::Messages::UpdateResult, publish: nil)
+      )
+    end
+
+    it 'deep-merges settings into Legion::Settings' do
+      runner.update_settings(settings: { transport: { host: 'new-host' } })
+      expect(@settings_store[:transport][:host]).to eq('new-host')
+    end
+
+    it 'preserves existing keys not in the update' do
+      runner.update_settings(settings: { transport: { host: 'new-host' } })
+      expect(@settings_store[:transport][:port]).to eq(5672)
+    end
+
+    it 'does not call Legion.reload by default' do
+      runner.update_settings(settings: { transport: { host: 'new-host' } })
+      expect(Legion).not_to have_received(:reload)
+    end
+
+    it 'calls Legion.reload when restart is true' do
+      runner.update_settings(settings: { transport: { host: 'new-host' } }, restart: true)
+      expect(Legion).to have_received(:reload)
+    end
+
+    it 'publishes a success result message' do
+      expect(Legion::Extensions::Node::Transport::Messages::UpdateResult).to receive(:new).with(
+        hash_including(action: 'update_settings', status: 'success')
+      ).and_return(instance_double(Legion::Extensions::Node::Transport::Messages::UpdateResult, publish: nil))
+      runner.update_settings(settings: { transport: { host: 'new-host' } })
+    end
+
+    context 'when merge fails' do
+      it 'publishes a failure result and does not crash' do
+        allow(Legion::Settings).to receive(:[]).with(:bad_key).and_return(nil)
+        expect(Legion::Extensions::Node::Transport::Messages::UpdateResult).to receive(:new).with(
+          hash_including(action: 'update_settings', status: 'failed')
+        ).and_return(instance_double(Legion::Extensions::Node::Transport::Messages::UpdateResult, publish: nil))
+        expect { runner.update_settings(settings: { bad_key: { nested: 'val' } }) }.not_to raise_error
+      end
+    end
+  end
 end
 # rubocop:enable Metrics/BlockLength
