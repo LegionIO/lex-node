@@ -3,39 +3,43 @@
 require 'spec_helper'
 
 # Stub framework dependencies before loading the runner
-module Legion
-  VERSION = '0.1.0' unless defined?(Legion::VERSION)
+unless defined?(Legion::Extensions::Helpers::Transport)
+  module Legion
+    VERSION = '0.1.0' unless defined?(Legion::VERSION)
 
-  module Extensions
-    module Helpers
-      module Transport
-        def messages; Messages end
-        module Messages
-          class Beat
-            def initialize(**); end
-            def publish; end
+    module Extensions
+      module Helpers
+        module Transport
+          def messages = Messages
+
+          module Messages
+            class Beat
+              def initialize(**); end
+              def publish; end
+            end
+          end
+        end
+
+        module Lex; end
+      end
+
+      module Node
+        module Transport
+          module Messages
+            class Beat
+              def initialize(**); end
+              def publish; end
+            end
           end
         end
       end
-      module Lex; end
     end
 
-    module Node
-      module Transport
-        module Messages
-          class Beat
-            def initialize(**); end
-            def publish; end
-          end
-        end
-      end
+    module Logging
+      def self.debug(*); end
     end
   end
-
-  module Logging
-    def self.debug(*); end
-  end
-end unless defined?(Legion::Extensions::Helpers::Transport)
+end
 
 require 'legion/extensions/node/runners/beat'
 

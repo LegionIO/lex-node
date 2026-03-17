@@ -12,46 +12,67 @@ module Legion
     module Node
       module Transport
         module Messages
-          class PublicKey
-            def initialize(**); end
-            def publish; end
-          end unless defined?(Legion::Extensions::Node::Transport::Messages::PublicKey)
+          unless defined?(Legion::Extensions::Node::Transport::Messages::PublicKey)
+            class PublicKey
+              def initialize(**); end
+              def publish; end
+            end
+          end
 
-          class PushClusterSecret
-            def initialize(**); end
-            def publish; end
-          end unless defined?(Legion::Extensions::Node::Transport::Messages::PushClusterSecret)
+          unless defined?(Legion::Extensions::Node::Transport::Messages::PushClusterSecret)
+            class PushClusterSecret
+              def initialize(**); end
+              def publish; end
+            end
+          end
 
-          class UpdateResult
-            def initialize(**); end
-            def publish; end
-          end unless defined?(Legion::Extensions::Node::Transport::Messages::UpdateResult)
+          unless defined?(Legion::Extensions::Node::Transport::Messages::UpdateResult)
+            class UpdateResult
+              def initialize(**); end
+              def publish; end
+            end
+          end
         end
       end
 
       module Runners
-        module Vault
-          def self.receive_vault_token(**opts); opts end
-        end unless defined?(Legion::Extensions::Node::Runners::Vault)
+        unless defined?(Legion::Extensions::Node::Runners::Vault)
+          module Vault
+            def self.receive_vault_token(**opts) = opts
+          end
+        end
       end
     end
   end
 
-  module Settings
-    def self.[](key); @store ||= {}; @store[key] end
-    def self.[]=(key, val); @store ||= {}; @store[key] = val end
-  end unless defined?(Legion::Settings)
+  unless defined?(Legion::Settings)
+    module Settings
+      def self.[](key)
+        @store ||= {}
+        @store[key]
+      end
 
-  module Crypt
-    def self.public_key; 'FAKEPUBKEY'; end unless method_defined?(:public_key)
-    def self.encrypt_from_keypair(**); 'ENCRYPTED'; end unless method_defined?(:encrypt_from_keypair)
-    def self.encrypt(_); 'ENCRYPTED_LEGION'; end unless method_defined?(:encrypt)
-    def self.decrypt_from_keypair(message:); 'DECRYPTED_SECRET'; end unless method_defined?(:decrypt_from_keypair)
-  end unless defined?(Legion::Crypt)
+      def self.[]=(key, val)
+        @store ||= {}
+        @store[key] = val
+      end
+    end
+  end
 
-  module Logging
-    def self.debug(*); end
-  end unless defined?(Legion::Logging)
+  unless defined?(Legion::Crypt)
+    module Crypt
+      def self.public_key = 'FAKEPUBKEY' unless method_defined?(:public_key)
+      def self.encrypt_from_keypair(**) = 'ENCRYPTED' unless method_defined?(:encrypt_from_keypair)
+      def self.encrypt(_) = 'ENCRYPTED_LEGION' unless method_defined?(:encrypt)
+      def self.decrypt_from_keypair(message:) = 'DECRYPTED_SECRET' unless method_defined?(:decrypt_from_keypair) # rubocop:disable Lint/UnusedMethodArgument
+    end
+  end
+
+  unless defined?(Legion::Logging)
+    module Logging
+      def self.debug(*); end
+    end
+  end
 
   def self.reload; end unless respond_to?(:reload)
 end
@@ -156,7 +177,7 @@ RSpec.describe Legion::Extensions::Node::Runners::Node do
       before do
         @settings_store[:crypt] = {
           cs_encrypt_ready: true,
-          cluster_secret: 'SECRET'
+          cluster_secret:   'SECRET'
         }
         allow(Legion::Crypt).to receive(:encrypt_from_keypair).and_return('ENCRYPTED')
         allow(Legion::Crypt).to receive(:encrypt).and_return('ENCRYPTED_LEGION')

@@ -11,34 +11,51 @@ module Legion
     module Node
       module Transport
         module Messages
-          class RequestVaultToken
-            def initialize(**); end
-            def publish; end
-          end unless defined?(RequestVaultToken)
+          unless defined?(RequestVaultToken)
+            class RequestVaultToken
+              def initialize(**); end
+              def publish; end
+            end
+          end
 
-          class PushVaultToken
-            def initialize(**); end
-            def publish; end
-          end unless defined?(PushVaultToken)
+          unless defined?(PushVaultToken)
+            class PushVaultToken
+              def initialize(**); end
+              def publish; end
+            end
+          end
         end
       end
     end
   end
 
-  module Settings
-    def self.[](key); @store ||= {}; @store[key] end
-    def self.[]=(key, val); @store ||= {}; @store[key] = val end
-  end unless defined?(Legion::Settings)
+  unless defined?(Legion::Settings)
+    module Settings
+      def self.[](key)
+        @store ||= {}
+        @store[key]
+      end
 
-  module Crypt
-    def self.decrypt_from_keypair(message:); 'DECRYPTED_TOKEN'; end
-    def self.encrypt_from_keypair(**); 'ENCRYPTED_TOKEN'; end
-    def self.connect_vault; end
-  end unless defined?(Legion::Crypt)
+      def self.[]=(key, val)
+        @store ||= {}
+        @store[key] = val
+      end
+    end
+  end
 
-  module Logging
-    def self.debug(*); end
-  end unless defined?(Legion::Logging)
+  unless defined?(Legion::Crypt)
+    module Crypt
+      def self.decrypt_from_keypair(message:) = 'DECRYPTED_TOKEN' # rubocop:disable Lint/UnusedMethodArgument
+      def self.encrypt_from_keypair(**) = 'ENCRYPTED_TOKEN'
+      def self.connect_vault; end
+    end
+  end
+
+  unless defined?(Legion::Logging)
+    module Logging
+      def self.debug(*); end
+    end
+  end
 end
 
 require 'legion/extensions/node/runners/vault'
@@ -90,7 +107,10 @@ RSpec.describe Legion::Extensions::Node::Runners::Vault do
     end
 
     context 'when vault is enabled and not connected' do
-      before { vault_store[:connected] = false; vault_store[:enabled] = true }
+      before do
+        vault_store[:connected] = false
+        vault_store[:enabled] = true
+      end
 
       it 'publishes a RequestVaultToken message' do
         msg = instance_double(Legion::Extensions::Node::Transport::Messages::RequestVaultToken, publish: nil)
