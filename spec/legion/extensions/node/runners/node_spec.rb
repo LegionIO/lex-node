@@ -79,7 +79,6 @@ end
 
 require 'legion/extensions/node/runners/node'
 
-# rubocop:disable Metrics/BlockLength
 RSpec.describe Legion::Extensions::Node::Runners::Node do
   let(:runner) do
     klass = Class.new do
@@ -334,4 +333,3 @@ RSpec.describe Legion::Extensions::Node::Runners::Node do
     end
   end
 end
-# rubocop:enable Metrics/BlockLength

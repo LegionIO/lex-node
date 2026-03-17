@@ -60,7 +60,6 @@ end
 
 require 'legion/extensions/node/runners/vault'
 
-# rubocop:disable Metrics/BlockLength
 RSpec.describe Legion::Extensions::Node::Runners::Vault do
   let(:vault_store) { { connected: false, enabled: true, token: nil, protocol: nil, address: nil, port: nil } }
 
@@ -205,4 +204,3 @@ RSpec.describe Legion::Extensions::Node::Runners::Vault do
     end
   end
 end
-# rubocop:enable Metrics/BlockLength
