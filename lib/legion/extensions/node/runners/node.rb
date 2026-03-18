@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'base64'
+
 module Legion
   module Extensions
     module Node
@@ -60,15 +62,34 @@ module Legion
           def push_public_key(**_opts)
             log.debug 'push_public_key'
             message_hash = { function:   'update_public_key',
-                             public_key: Legion::Crypt.public_key.to_s,
+                             public_key: Base64.encode64(Legion::Crypt.public_key),
                              **Legion::Settings[:client] }
-            Legion::Extensions::Node::Transport::Messages::PublicKey.new(**message_hash).publish
+            Legion::Extensions::Node::Transport::Messages::PublicKey.new(message_hash).publish
             {}
           end
 
           def update_public_key(name:, public_key:, **_opts)
             log.debug 'update_public_key'
             Legion::Settings[:cluster][:public_keys][name] = public_key
+            {}
+          end
+
+          def delete_public_key(name:, **_opts)
+            log.debug 'delete_public_key'
+            Legion::Settings[:cluster][:public_keys].delete(name)
+            {}
+          end
+
+          def request_public_keys(**_opts)
+            log.debug 'request_public_keys'
+            message_hash = { function: 'push_public_key' }
+            Legion::Extensions::Node::Transport::Messages::RequestPublicKeys.new(**message_hash).publish
+            {}
+          end
+
+          def request_cluster_secret(**_opts)
+            log.debug 'request_cluster_secret'
+            Legion::Extensions::Node::Transport::Messages::RequestClusterSecret.new.publish
             {}
           end
 
@@ -86,9 +107,11 @@ module Legion
             {}
           end
 
-          def receive_cluster_secret(message:, **_opts)
+          def receive_cluster_secret(message:, **opts)
             log.debug 'receive_cluster_secret'
             Legion::Settings[:crypt][:cluster_secret] = Legion::Crypt.decrypt_from_keypair(message: message)
+            Legion::Settings[:crypt][:encrypted_string] = opts[:encrypted_string]
+            Legion::Settings[:crypt][:validation_string] = opts[:validation_string]
             {}
           end
 

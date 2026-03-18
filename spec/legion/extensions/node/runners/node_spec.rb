@@ -26,6 +26,20 @@ module Legion
             end
           end
 
+          unless defined?(Legion::Extensions::Node::Transport::Messages::RequestPublicKeys)
+            class RequestPublicKeys
+              def initialize(**); end
+              def publish; end
+            end
+          end
+
+          unless defined?(Legion::Extensions::Node::Transport::Messages::RequestClusterSecret)
+            class RequestClusterSecret
+              def initialize; end
+              def publish; end
+            end
+          end
+
           unless defined?(Legion::Extensions::Node::Transport::Messages::UpdateResult)
             class UpdateResult
               def initialize(**); end
@@ -138,9 +152,10 @@ RSpec.describe Legion::Extensions::Node::Runners::Node do
       runner.push_public_key
     end
 
-    it 'includes the public key in the message' do
-      expect(Legion::Extensions::Node::Transport::Messages::PublicKey).to receive(:new) do |**args|
-        expect(args[:public_key]).to eq('FAKEPUBKEY')
+    it 'includes the base64-encoded public key in the message' do
+      require 'base64'
+      expect(Legion::Extensions::Node::Transport::Messages::PublicKey).to receive(:new) do |args|
+        expect(args[:public_key]).to eq(Base64.encode64('FAKEPUBKEY'))
         instance_double(Legion::Extensions::Node::Transport::Messages::PublicKey, publish: nil)
       end
       runner.push_public_key
@@ -206,10 +221,70 @@ RSpec.describe Legion::Extensions::Node::Runners::Node do
       expect(crypt_settings[:cluster_secret]).to eq('DECRYPTED_SECRET')
     end
 
+    it 'stores encrypted_string from opts' do
+      allow(Legion::Crypt).to receive(:decrypt_from_keypair).and_return('DECRYPTED_SECRET')
+      crypt_settings = {}
+      @settings_store[:crypt] = crypt_settings
+      runner.receive_cluster_secret(message: 'ENCRYPTED_MSG', encrypted_string: 'ENC_LEG')
+      expect(crypt_settings[:encrypted_string]).to eq('ENC_LEG')
+    end
+
+    it 'stores validation_string from opts' do
+      allow(Legion::Crypt).to receive(:decrypt_from_keypair).and_return('DECRYPTED_SECRET')
+      crypt_settings = {}
+      @settings_store[:crypt] = crypt_settings
+      runner.receive_cluster_secret(message: 'ENCRYPTED_MSG', validation_string: 'legion')
+      expect(crypt_settings[:validation_string]).to eq('legion')
+    end
+
     it 'returns an empty hash' do
       @settings_store[:crypt] = {}
       result = runner.receive_cluster_secret(message: 'ENCRYPTED_MSG')
       expect(result).to eq({})
+    end
+  end
+
+  describe '#delete_public_key' do
+    it 'removes the key from cluster.public_keys' do
+      cluster_keys = { 'node-b' => 'PUBKEY_B' }
+      @settings_store[:cluster] = { public_keys: cluster_keys }
+      runner.delete_public_key(name: 'node-b')
+      expect(cluster_keys).not_to have_key('node-b')
+    end
+
+    it 'returns an empty hash' do
+      @settings_store[:cluster] = { public_keys: {} }
+      expect(runner.delete_public_key(name: 'missing')).to eq({})
+    end
+  end
+
+  describe '#request_public_keys' do
+    it 'publishes a RequestPublicKeys message' do
+      msg = instance_double(Legion::Extensions::Node::Transport::Messages::RequestPublicKeys, publish: nil)
+      expect(Legion::Extensions::Node::Transport::Messages::RequestPublicKeys).to receive(:new).and_return(msg)
+      runner.request_public_keys
+    end
+
+    it 'returns an empty hash' do
+      allow(Legion::Extensions::Node::Transport::Messages::RequestPublicKeys).to receive(:new).and_return(
+        instance_double(Legion::Extensions::Node::Transport::Messages::RequestPublicKeys, publish: nil)
+      )
+      expect(runner.request_public_keys).to eq({})
+    end
+  end
+
+  describe '#request_cluster_secret' do
+    it 'publishes a RequestClusterSecret message' do
+      msg = instance_double(Legion::Extensions::Node::Transport::Messages::RequestClusterSecret, publish: nil)
+      expect(Legion::Extensions::Node::Transport::Messages::RequestClusterSecret).to receive(:new).and_return(msg)
+      runner.request_cluster_secret
+    end
+
+    it 'returns an empty hash' do
+      allow(Legion::Extensions::Node::Transport::Messages::RequestClusterSecret).to receive(:new).and_return(
+        instance_double(Legion::Extensions::Node::Transport::Messages::RequestClusterSecret, publish: nil)
+      )
+      expect(runner.request_cluster_secret).to eq({})
     end
   end
 
