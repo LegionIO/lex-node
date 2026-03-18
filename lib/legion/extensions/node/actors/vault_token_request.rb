@@ -14,7 +14,7 @@ module Legion
           end
 
           def use_runner?
-            false
+            true
           end
 
           def check_subtask?

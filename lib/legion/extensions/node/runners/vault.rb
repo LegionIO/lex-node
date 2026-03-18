@@ -17,10 +17,18 @@ module Legion
             {}
           end
 
-          def receive_vault_token(message:, **opts)
-            return if Legion::Settings[:crypt][:vault][:connected]
+          def receive_vault_token(message: nil, token: nil, cluster_name: nil, **opts)
+            return { success: false, already_connected: true } if Legion::Settings[:crypt][:vault][:connected]
 
-            Legion::Settings[:crypt][:vault][:token] = Legion::Crypt.decrypt_from_keypair(message: message)
+            token ||= Legion::Crypt.decrypt_from_keypair(message: message)
+            clusters = Legion::Settings[:crypt][:vault][:clusters]
+            if cluster_name && clusters.is_a?(Hash) && clusters[cluster_name.to_sym]
+              clusters[cluster_name.to_sym][:token] = token
+              clusters[cluster_name.to_sym][:connected] = true
+              return { success: true }
+            end
+
+            Legion::Settings[:crypt][:vault][:token] = token
             %i[protocol address port].each do |setting|
               next unless opts.key? setting
               next unless Legion::Settings[:crypt][:vault][setting].nil?

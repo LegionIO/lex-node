@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'base64'
+
 module Legion
   module Extensions
     module Node
@@ -15,7 +17,7 @@ module Legion
                 function:     'push_vault_token',
                 node_name:    Legion::Settings[:client][:name],
                 runner_class: 'Legion::Extensions::Node::Runners::Vault',
-                public_key:   Legion::Crypt.public_key
+                public_key:   Base64.encode64(Legion::Crypt.public_key.to_s)
               }
             end
 

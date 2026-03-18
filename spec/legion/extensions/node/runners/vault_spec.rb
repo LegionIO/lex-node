@@ -61,7 +61,7 @@ end
 require 'legion/extensions/node/runners/vault'
 
 RSpec.describe Legion::Extensions::Node::Runners::Vault do
-  let(:vault_store) { { connected: false, enabled: true, token: nil, protocol: nil, address: nil, port: nil } }
+  let(:vault_store) { { connected: false, enabled: true, token: nil, protocol: nil, address: nil, port: nil, clusters: {} } }
 
   let(:runner) do
     store = vault_store
@@ -132,9 +132,11 @@ RSpec.describe Legion::Extensions::Node::Runners::Vault do
     context 'when vault is already connected' do
       before { vault_store[:connected] = true }
 
-      it 'returns nil without decrypting' do
+      it 'returns already_connected hash without decrypting' do
         expect(Legion::Crypt).not_to receive(:decrypt_from_keypair)
-        expect(runner.receive_vault_token(message: 'ENC', routing_key: 'rk', public_key: 'PK')).to be_nil
+        result = runner.receive_vault_token(message: 'ENC', routing_key: 'rk', public_key: 'PK')
+        expect(result[:success]).to be false
+        expect(result[:already_connected]).to be true
       end
     end
 
@@ -170,6 +172,35 @@ RSpec.describe Legion::Extensions::Node::Runners::Vault do
       it 'returns empty hash' do
         allow(Legion::Crypt).to receive(:connect_vault)
         expect(runner.receive_vault_token(message: 'ENC', routing_key: 'rk', public_key: 'PK')).to eq({})
+      end
+    end
+
+    context 'multi-cluster vault' do
+      before do
+        vault_store[:clusters] = {
+          prod: { address: 'vault.example.com', token: nil, connected: false }
+        }
+        vault_store[:connected] = false
+      end
+
+      it 'stores token in cluster entry when cluster_name given' do
+        allow(Legion::Crypt).to receive(:connect_vault)
+        result = runner.receive_vault_token(token: 'hvs.multi', cluster_name: :prod)
+        expect(vault_store[:clusters][:prod][:token]).to eq('hvs.multi')
+        expect(result[:success]).to be true
+      end
+    end
+
+    context 'legacy single-cluster vault' do
+      before do
+        vault_store[:clusters] = {}
+        vault_store[:connected] = false
+      end
+
+      it 'stores token in top-level setting when no cluster_name' do
+        allow(Legion::Crypt).to receive(:connect_vault)
+        runner.receive_vault_token(token: 'hvs.legacy')
+        expect(vault_store[:token]).to eq('hvs.legacy')
       end
     end
   end
