@@ -6,7 +6,9 @@ unless defined?(Legion::Extensions::Actors::Once)
   module Legion
     module Extensions
       module Actors
-        class Once; end
+        class Once
+          def initialize(**); end
+        end
       end
     end
   end
@@ -17,7 +19,11 @@ unless defined?(Legion::Extensions::Node::Runners::Crypt)
     module Extensions
       module Node
         module Runners
-          class Crypt; end
+          class Crypt
+            def self.name
+              'Legion::Extensions::Node::Runners::Crypt'
+            end
+          end
         end
       end
     end

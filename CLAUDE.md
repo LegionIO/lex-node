@@ -10,7 +10,7 @@ Core Legion Extension responsible for node identity within a LegionIO cluster. H
 
 **GitHub**: https://github.com/LegionIO/lex-node
 **License**: MIT
-**Version**: 0.2.3
+**Version**: 0.3.0
 
 ## Architecture
 

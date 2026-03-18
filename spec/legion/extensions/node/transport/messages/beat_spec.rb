@@ -5,9 +5,9 @@ require 'spec_helper'
 # The runners/beat_spec defines a stub Beat class that conflicts with the real one.
 # To test the message payload methods we added, we create a test class that includes
 # the same private methods without requiring the real Beat < Legion::Transport::Message.
-BEAT_TEST_CLASS = Class.new do
-  BOOT_TIME = ::Process.clock_gettime(::Process::CLOCK_MONOTONIC)
+BEAT_BOOT_TIME = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
+BEAT_TEST_CLASS = Class.new do
   def initialize(**opts)
     @options = opts
   end
@@ -15,7 +15,7 @@ BEAT_TEST_CLASS = Class.new do
   def message
     hash = {
       name:      'test-node',
-      pid:       ::Process.pid,
+      pid:       Process.pid,
       timestamp: Time.now,
       status:    @options[:status].nil? ? 'healthy' : @options[:status]
     }
@@ -28,7 +28,7 @@ BEAT_TEST_CLASS = Class.new do
   private
 
   def collect_metrics
-    times = ::Process.times
+    times = Process.times
     {
       memory_rss_mb:      rss_mb,
       cpu_user_seconds:   times.utime.round(2),
@@ -41,9 +41,9 @@ BEAT_TEST_CLASS = Class.new do
 
   def rss_mb
     if RUBY_PLATFORM.include?('darwin')
-      `ps -o rss= -p #{::Process.pid}`.strip.to_i / 1024.0
+      `ps -o rss= -p #{Process.pid}`.strip.to_i / 1024.0
     else
-      File.read("/proc/#{::Process.pid}/statm").split[1].to_i * (4096.0 / 1_048_576)
+      File.read("/proc/#{Process.pid}/statm").split[1].to_i * (4096.0 / 1_048_576)
     end
   rescue StandardError
     0.0
@@ -56,7 +56,7 @@ BEAT_TEST_CLASS = Class.new do
   end
 
   def uptime_seconds
-    (::Process.clock_gettime(::Process::CLOCK_MONOTONIC) - BOOT_TIME).round(0)
+    (Process.clock_gettime(Process::CLOCK_MONOTONIC) - BEAT_BOOT_TIME).round(0)
   end
 
   def collect_worker_ids

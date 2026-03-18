@@ -35,7 +35,6 @@ module Legion
 
           unless defined?(Legion::Extensions::Node::Transport::Messages::RequestClusterSecret)
             class RequestClusterSecret
-              def initialize; end
               def publish; end
             end
           end
