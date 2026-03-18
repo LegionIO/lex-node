@@ -26,7 +26,7 @@ module Legion
           end
 
           def time
-            settings['beat_interval']
+            settings[:beat_interval]
           end
         end
       end

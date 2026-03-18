@@ -6,6 +6,7 @@ module Legion
       module Transport
         module Messages
           class Beat < Legion::Transport::Message
+            BOOT_TIME = ::Process.clock_gettime(::Process::CLOCK_MONOTONIC)
             def routing_key
               'status'
             end
@@ -24,7 +25,7 @@ module Legion
 
             def message
               hash = {
-                name:      Legion::Settings[:client][:hostname],
+                name:      Legion::Settings[:client][:name],
                 pid:       ::Process.pid,
                 timestamp: Time.now,
                 status:    @options[:status].nil? ? 'healthy' : @options[:status]
@@ -72,11 +73,7 @@ module Legion
             end
 
             def uptime_seconds
-              (::Process.clock_gettime(::Process::CLOCK_MONOTONIC) - boot_time).round(0)
-            end
-
-            def boot_time
-              @boot_time ||= ::Process.clock_gettime(::Process::CLOCK_MONOTONIC)
+              (::Process.clock_gettime(::Process::CLOCK_MONOTONIC) - BOOT_TIME).round(0)
             end
 
             def collect_worker_ids

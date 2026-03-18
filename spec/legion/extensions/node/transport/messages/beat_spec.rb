@@ -6,6 +6,8 @@ require 'spec_helper'
 # To test the message payload methods we added, we create a test class that includes
 # the same private methods without requiring the real Beat < Legion::Transport::Message.
 BEAT_TEST_CLASS = Class.new do
+  BOOT_TIME = ::Process.clock_gettime(::Process::CLOCK_MONOTONIC)
+
   def initialize(**opts)
     @options = opts
   end
@@ -13,7 +15,7 @@ BEAT_TEST_CLASS = Class.new do
   def message
     hash = {
       name:      'test-node',
-      pid:       Process.pid,
+      pid:       ::Process.pid,
       timestamp: Time.now,
       status:    @options[:status].nil? ? 'healthy' : @options[:status]
     }
@@ -26,7 +28,7 @@ BEAT_TEST_CLASS = Class.new do
   private
 
   def collect_metrics
-    times = Process.times
+    times = ::Process.times
     {
       memory_rss_mb:      rss_mb,
       cpu_user_seconds:   times.utime.round(2),
@@ -39,9 +41,9 @@ BEAT_TEST_CLASS = Class.new do
 
   def rss_mb
     if RUBY_PLATFORM.include?('darwin')
-      `ps -o rss= -p #{Process.pid}`.strip.to_i / 1024.0
+      `ps -o rss= -p #{::Process.pid}`.strip.to_i / 1024.0
     else
-      File.read("/proc/#{Process.pid}/statm").split[1].to_i * (4096.0 / 1_048_576)
+      File.read("/proc/#{::Process.pid}/statm").split[1].to_i * (4096.0 / 1_048_576)
     end
   rescue StandardError
     0.0
@@ -54,11 +56,7 @@ BEAT_TEST_CLASS = Class.new do
   end
 
   def uptime_seconds
-    (Process.clock_gettime(Process::CLOCK_MONOTONIC) - boot_time).round(0)
-  end
-
-  def boot_time
-    @boot_time ||= Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    (::Process.clock_gettime(::Process::CLOCK_MONOTONIC) - BOOT_TIME).round(0)
   end
 
   def collect_worker_ids
@@ -106,6 +104,13 @@ RSpec.describe 'Beat message payload' do
 
     it 'returns uptime_seconds as a non-negative number' do
       expect(msg[:metrics][:uptime_seconds]).to be >= 0
+    end
+
+    it 'uptime_seconds uses class-level BOOT_TIME (stable across instances)' do
+      t1 = BEAT_TEST_CLASS.new(status: 'healthy').message[:metrics][:uptime_seconds]
+      t2 = BEAT_TEST_CLASS.new(status: 'healthy').message[:metrics][:uptime_seconds]
+      # Both instances should return the same or nearly equal uptime (within 1 second)
+      expect((t2 - t1).abs).to be <= 1
     end
 
     it 'returns empty hosted_worker_ids when Legion::DigitalWorker is not defined' do

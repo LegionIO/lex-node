@@ -8,9 +8,9 @@ module Legion
           include Legion::Extensions::Helpers::Transport
 
           def beat(status: 'active', **opts)
-            log.debug 'sending hearbeat'
+            log.debug 'sending heartbeat'
             messages::Beat.new(status: status).publish
-            { success: true, status: status, version: Legion::VERSION || nil, **opts }
+            { success: true, status: status, version: defined?(Legion::VERSION) ? Legion::VERSION : nil, **opts }
           end
 
           include Legion::Extensions::Helpers::Lex
