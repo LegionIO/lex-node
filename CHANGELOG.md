@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.1] - 2026-03-19
+
+### Fixed
+- `push_key` actor referenced removed `Runners::Crypt` (consolidated into `Runners::Node` in v0.3.0); updated actor and spec to use `Runners::Node`
+
 ## [0.3.0] - 2026-03-18
 
 ### Fixed

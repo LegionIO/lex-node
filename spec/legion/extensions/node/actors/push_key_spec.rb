@@ -14,15 +14,12 @@ unless defined?(Legion::Extensions::Actors::Once)
   end
 end
 
-unless defined?(Legion::Extensions::Node::Runners::Crypt)
+unless defined?(Legion::Extensions::Node::Runners::Node)
   module Legion
     module Extensions
       module Node
         module Runners
-          class Crypt
-            def self.name
-              'Legion::Extensions::Node::Runners::Crypt'
-            end
+          module Node
           end
         end
       end
@@ -46,8 +43,8 @@ RSpec.describe Legion::Extensions::Node::Actor::PushKey do
   end
 
   describe '#runner_class' do
-    it 'returns Legion::Extensions::Node::Runners::Crypt' do
-      expect(call(:runner_class)).to eq(Legion::Extensions::Node::Runners::Crypt)
+    it 'returns Legion::Extensions::Node::Runners::Node' do
+      expect(call(:runner_class)).to eq(Legion::Extensions::Node::Runners::Node)
     end
   end
 

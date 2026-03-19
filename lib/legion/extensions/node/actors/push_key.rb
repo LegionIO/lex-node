@@ -10,7 +10,7 @@ module Legion
           end
 
           def runner_class
-            Legion::Extensions::Node::Runners::Crypt
+            Legion::Extensions::Node::Runners::Node
           end
 
           def disabled?
