@@ -33,6 +33,7 @@ module Legion
               hash[:version] = Legion::VERSION if defined?(Legion::VERSION)
               hash[:metrics] = collect_metrics
               hash[:hosted_worker_ids] = collect_worker_ids
+              hash[:rabbitmq_cluster] = collect_rabbitmq_cluster
               hash
             end
 
@@ -74,6 +75,14 @@ module Legion
 
             def uptime_seconds
               (::Process.clock_gettime(::Process::CLOCK_MONOTONIC) - BOOT_TIME).round(0)
+            end
+
+            def collect_rabbitmq_cluster
+              return { status: 'unknown', detail: 'helper not loaded' } unless defined?(Legion::Extensions::Node::Helpers::Rabbitmq)
+
+              Legion::Extensions::Node::Helpers::Rabbitmq.cluster_health
+            rescue StandardError => e
+              { status: 'unknown', detail: e.message }
             end
 
             def collect_worker_ids

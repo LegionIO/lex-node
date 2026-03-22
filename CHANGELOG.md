@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2] - 2026-03-21
+
+### Added
+- `Helpers::Rabbitmq` module: queries RabbitMQ Management API for cluster health metrics (node count, quorum queue leaders, shovel link status)
+- Beat heartbeat message now includes `rabbitmq_cluster` section with node count, quorum leaders, and shovel links
+- 15 new specs covering all Rabbitmq helper methods (111 total, 0 failures)
+
 ## [0.3.1] - 2026-03-19
 
 ### Fixed
