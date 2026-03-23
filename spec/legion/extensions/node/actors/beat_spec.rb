@@ -73,12 +73,12 @@ RSpec.describe Legion::Extensions::Node::Actor::Beat do
 
   describe '#time' do
     it 'reads beat_interval from settings' do
-      allow(Legion::Settings).to receive(:[]).with(:beat_interval).and_return(30)
+      allow(instance).to receive(:settings).and_return({ beat_interval: 30 })
       expect(call(:time)).to eq(30)
     end
 
     it 'returns nil when beat_interval is not configured' do
-      allow(Legion::Settings).to receive(:[]).with(:beat_interval).and_return(nil)
+      allow(instance).to receive(:settings).and_return({})
       expect(call(:time)).to be_nil
     end
   end

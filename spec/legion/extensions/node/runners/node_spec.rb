@@ -212,8 +212,11 @@ RSpec.describe Legion::Extensions::Node::Runners::Node do
   end
 
   describe '#receive_cluster_secret' do
-    it 'decrypts and stores the cluster secret' do
+    before do
       allow(Legion::Crypt).to receive(:decrypt_from_keypair).and_return('DECRYPTED_SECRET')
+    end
+
+    it 'decrypts and stores the cluster secret' do
       crypt_settings = {}
       @settings_store[:crypt] = crypt_settings
       runner.receive_cluster_secret(message: 'ENCRYPTED_MSG')
@@ -221,7 +224,6 @@ RSpec.describe Legion::Extensions::Node::Runners::Node do
     end
 
     it 'stores encrypted_string from opts' do
-      allow(Legion::Crypt).to receive(:decrypt_from_keypair).and_return('DECRYPTED_SECRET')
       crypt_settings = {}
       @settings_store[:crypt] = crypt_settings
       runner.receive_cluster_secret(message: 'ENCRYPTED_MSG', encrypted_string: 'ENC_LEG')
@@ -229,7 +231,6 @@ RSpec.describe Legion::Extensions::Node::Runners::Node do
     end
 
     it 'stores validation_string from opts' do
-      allow(Legion::Crypt).to receive(:decrypt_from_keypair).and_return('DECRYPTED_SECRET')
       crypt_settings = {}
       @settings_store[:crypt] = crypt_settings
       runner.receive_cluster_secret(message: 'ENCRYPTED_MSG', validation_string: 'legion')

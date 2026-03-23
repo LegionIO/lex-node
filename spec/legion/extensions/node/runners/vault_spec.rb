@@ -141,11 +141,13 @@ RSpec.describe Legion::Extensions::Node::Runners::Vault do
     end
 
     context 'when vault is not connected' do
-      before { vault_store[:connected] = false }
-
-      it 'decrypts and stores the vault token' do
+      before do
+        vault_store[:connected] = false
         allow(Legion::Crypt).to receive(:decrypt_from_keypair).and_return('DECRYPTED_TOKEN')
         allow(Legion::Crypt).to receive(:connect_vault)
+      end
+
+      it 'decrypts and stores the vault token' do
         runner.receive_vault_token(message: 'ENC', routing_key: 'rk', public_key: 'PK')
         expect(vault_store[:token]).to eq('DECRYPTED_TOKEN')
       end
@@ -157,20 +159,17 @@ RSpec.describe Legion::Extensions::Node::Runners::Vault do
 
       it 'stores provided vault settings when current value is nil' do
         vault_store[:address] = nil
-        allow(Legion::Crypt).to receive(:connect_vault)
         runner.receive_vault_token(message: 'ENC', routing_key: 'rk', public_key: 'PK', address: 'vault.local')
         expect(vault_store[:address]).to eq('vault.local')
       end
 
       it 'does not overwrite existing vault settings' do
         vault_store[:address] = 'existing.vault'
-        allow(Legion::Crypt).to receive(:connect_vault)
         runner.receive_vault_token(message: 'ENC', routing_key: 'rk', public_key: 'PK', address: 'new.vault')
         expect(vault_store[:address]).to eq('existing.vault')
       end
 
       it 'returns empty hash' do
-        allow(Legion::Crypt).to receive(:connect_vault)
         expect(runner.receive_vault_token(message: 'ENC', routing_key: 'rk', public_key: 'PK')).to eq({})
       end
     end

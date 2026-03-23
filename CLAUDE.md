@@ -10,7 +10,7 @@ Core Legion Extension responsible for node identity within a LegionIO cluster. H
 
 **GitHub**: https://github.com/LegionIO/lex-node
 **License**: MIT
-**Version**: 0.3.1
+**Version**: 0.3.2
 
 ## Architecture
 
@@ -50,6 +50,8 @@ Legion::Extensions::Node
 │       ├── RequestVaultToken     # Request Vault token from peer
 │       ├── PushVaultToken        # Distribute encrypted Vault token
 │       └── UpdateResult          # Operation result (update_gem / update_settings outcomes)
+├── Helpers/
+│   └── Rabbitmq          # RabbitMQ Management API cluster health (node count, quorum leaders, shovel links)
 └── DataTest/
     └── Migrations/
         ├── 001_nodes_table          # Core nodes table
@@ -67,7 +69,8 @@ Legion::Extensions::Node
 | `lib/legion/extensions/node/runners/crypt.rb` | RSA keypair and cluster secret exchange |
 | `lib/legion/extensions/node/runners/node.rb` | Dynamic config distribution, update_settings, update_gem, public key relay |
 | `lib/legion/extensions/node/runners/vault.rb` | Vault token request/receive/push lifecycle |
-| `lib/legion/extensions/node/transport/messages/beat.rb` | Heartbeat message (routing_key: 'status', TTL 5s) with resource metrics, hosted worker IDs, and Legion version |
+| `lib/legion/extensions/node/helpers/rabbitmq.rb` | RabbitMQ Management API cluster health helper (node count, quorum leaders, shovel links) |
+| `lib/legion/extensions/node/transport/messages/beat.rb` | Heartbeat message (routing_key: 'status', TTL 5s) with resource metrics, hosted worker IDs, RabbitMQ cluster health, and Legion version |
 | `lib/legion/extensions/node/transport/messages/update_result.rb` | Operation result message for update_gem/update_settings |
 | `lib/legion/extensions/node/transport/messages/` | All node-to-node message types |
 | `lib/legion/extensions/node/transport/queues/node.rb` | Per-node queue (exclusive, auto-delete, classic type) |

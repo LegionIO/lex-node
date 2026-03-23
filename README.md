@@ -2,7 +2,7 @@
 
 Node identity and cluster management for [LegionIO](https://github.com/LegionIO/LegionIO). Handles heartbeat broadcasting, dynamic configuration distribution, cluster secret exchange, Vault token management, and RSA public key distribution between nodes.
 
-**Version**: 0.3.1
+**Version**: 0.3.2
 
 This is a core LEX installed by default with LegionIO.
 

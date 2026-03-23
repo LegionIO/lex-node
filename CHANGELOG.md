@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.3] - 2026-03-22
+
+### Changed
+- Add legion-cache, legion-crypt, legion-data, legion-json, legion-logging, legion-settings, legion-transport as runtime dependencies
+- Update spec_helper with real sub-gem helper stubs (Legion::Logging::Helper, Legion::Settings::Helper, Legion::Cache::Helper, Legion::Crypt::Helper, Legion::Data::Helper, Legion::JSON::Helper, Legion::Transport::Helper)
+- Update specs to stub Legion::Crypt methods explicitly now that the real gem is loaded in tests
+- Update beat actor spec to stub `settings` at instance level for beat_interval lookup
+
 ## [0.3.2] - 2026-03-21
 
 ### Added
