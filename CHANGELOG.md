@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Migration 005: composite index on (status, active, updated) for nodes table
+- Migration 006: indexes on created, updated, and composite (status, active, created) for nodes table to fix slow health watchdog query
+
 ## [0.3.3] - 2026-03-22
 
 ### Changed
