@@ -10,7 +10,7 @@ Core Legion Extension responsible for node identity within a LegionIO cluster. H
 
 **GitHub**: https://github.com/LegionIO/lex-node
 **License**: MIT
-**Version**: 0.3.2
+**Version**: 0.3.4
 
 ## Architecture
 
@@ -57,7 +57,9 @@ Legion::Extensions::Node
         ├── 001_nodes_table          # Core nodes table
         ├── 002_node_history_table   # Node activity history
         ├── 003_legion_version_colume # Legion version column (note: typo in filename)
-        └── 004_node_extensions      # Installed extensions per node
+        ├── 004_node_extensions      # Installed extensions per node
+        ├── 005_add_slow_query_indexes # Composite index on (status, active, updated)
+        └── 006_add_nodes_created_index # Indexes on created, updated, composite (status, active, created)
 ```
 
 ## Key Files
