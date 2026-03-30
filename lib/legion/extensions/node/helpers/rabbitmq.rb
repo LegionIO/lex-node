@@ -20,7 +20,7 @@ module Legion
               shovel_links:   fetch_shovel_links(http, settings)
             }
           rescue Errno::ECONNREFUSED, Errno::ETIMEDOUT, SocketError, Net::OpenTimeout, Net::ReadTimeout => e
-            log_warn("RabbitMQ management API unreachable: #{e.message}")
+            log.warn("RabbitMQ management API unreachable: #{e.message}")
             { node_count: unreachable, quorum_leaders: unreachable, shovel_links: unreachable }
           end
 
@@ -66,7 +66,7 @@ module Legion
                         (running == total ? 'ok' : 'warn')
                       end
             { status: status, total: total, running: running }
-          rescue StandardError
+          rescue StandardError => _e
             { status: 'ok', total: 0, running: 0 }
           end
 
@@ -89,7 +89,7 @@ module Legion
             return nil unless response.code.start_with?('2')
 
             ::JSON.parse(response.body)
-          rescue StandardError
+          rescue StandardError => _e
             nil
           end
 
@@ -115,11 +115,7 @@ module Legion
           end
 
           def log_warn(msg)
-            if defined?(Legion::Logging)
-              Legion::Logging.warn { msg }
-            elsif defined?(Legion::Transport) && Legion::Transport.respond_to?(:logger)
-              Legion::Transport.logger.warn(msg)
-            end
+            log.warn(msg)
           end
         end
       end

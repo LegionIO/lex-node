@@ -6,7 +6,7 @@ require 'legion/extensions/node/helpers/rabbitmq'
 module Legion
   module Extensions
     module Node
-      extend Legion::Extensions::Core if Legion::Extensions.const_defined? :Core
+      extend Legion::Extensions::Core if Legion::Extensions.const_defined? :Core, false
     end
   end
 end
