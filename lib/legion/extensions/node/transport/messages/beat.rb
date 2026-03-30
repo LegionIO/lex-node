@@ -63,7 +63,7 @@ module Legion
               else
                 File.read("/proc/#{::Process.pid}/statm").split[1].to_i * (4096.0 / 1_048_576)
               end
-            rescue StandardError
+            rescue StandardError => _e
               0.0
             end
 
@@ -89,7 +89,7 @@ module Legion
               return [] unless defined?(Legion::DigitalWorker)
 
               Legion::DigitalWorker.active_local_ids
-            rescue StandardError
+            rescue StandardError => _e
               []
             end
           end

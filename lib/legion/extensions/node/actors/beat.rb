@@ -4,7 +4,7 @@ module Legion
   module Extensions
     module Node
       module Actor
-        class Beat < Legion::Extensions::Actors::Every
+        class Beat < Legion::Extensions::Actors::Every # rubocop:disable Legion/Extension/EveryActorRequiresTime
           def runner_function
             'beat'
           end
