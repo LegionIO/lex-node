@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.6] - 2026-03-31
+
+### Added
+- `legion.cluster.control` topic exchange for cluster-wide broadcast (durable, topic type)
+- Per-node auto-delete queue `legion.cluster.control.<name>` bound to the exchange on boot
+- `ClusterSettings` message: publishes settings changes with configurable routing key to the cluster control exchange
+- `ClusterKillswitch` message: publishes emergency extension block via routing key `settings.extensions.blocked`
+- `ClusterControl` subscription actor: subscribes to the per-node cluster control queue, routes to existing runners by routing key
+- `Runners::Node#broadcast_settings(settings:, routing_key: 'settings', restart: false)`: sends settings to all nodes via the cluster control exchange
+- `Runners::Node#killswitch(extension:)`: blocks an extension cluster-wide with immediate reload
+- 51 new specs covering all new components (162 total, 0 failures)
+
 ## [0.3.5] - 2026-03-30
 
 ### Changed

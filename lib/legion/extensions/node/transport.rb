@@ -13,6 +13,7 @@ module Legion
           array.push(from: 'node', to: 'node', routing_key: 'node.data.#') if Legion::Settings[:data]&.[](:connected) || false
           array.push(from: 'node', to: 'node', routing_key: 'node.cache.#') if Legion::Settings[:cache]&.[](:connected) || false
           array.push(from: 'node', to: 'node', routing_key: 'node.crypt.#')
+          array.push(from: 'cluster_control', to: 'cluster_control', routing_key: '#')
           array
         end
       end

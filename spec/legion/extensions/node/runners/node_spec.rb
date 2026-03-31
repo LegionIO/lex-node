@@ -45,6 +45,20 @@ module Legion
               def publish; end
             end
           end
+
+          unless defined?(Legion::Extensions::Node::Transport::Messages::ClusterSettings)
+            class ClusterSettings
+              def initialize(**); end
+              def publish; end
+            end
+          end
+
+          unless defined?(Legion::Extensions::Node::Transport::Messages::ClusterKillswitch)
+            class ClusterKillswitch
+              def initialize(**); end
+              def publish; end
+            end
+          end
         end
       end
 
@@ -404,6 +418,113 @@ RSpec.describe Legion::Extensions::Node::Runners::Node do
           hash_including(action: 'update_settings', status: 'failed')
         ).and_return(instance_double(Legion::Extensions::Node::Transport::Messages::UpdateResult, publish: nil))
         expect { runner.update_settings(settings: { bad_key: { nested: 'val' } }) }.not_to raise_error
+      end
+    end
+  end
+
+  describe '#broadcast_settings' do
+    before do
+      @settings_store[:client] = { name: 'test-node' }
+      allow(Legion::Extensions::Node::Transport::Messages::ClusterSettings).to receive(:new).and_return(
+        instance_double(Legion::Extensions::Node::Transport::Messages::ClusterSettings, publish: nil)
+      )
+    end
+
+    it 'publishes a ClusterSettings message' do
+      expect(Legion::Extensions::Node::Transport::Messages::ClusterSettings).to receive(:new)
+      runner.broadcast_settings(settings: { feature: true })
+    end
+
+    it 'returns an empty hash' do
+      result = runner.broadcast_settings(settings: { feature: true })
+      expect(result).to eq({})
+    end
+
+    it 'defaults routing_key to "settings"' do
+      expect(Legion::Extensions::Node::Transport::Messages::ClusterSettings).to receive(:new).with(
+        hash_including(routing_key: 'settings')
+      ).and_return(instance_double(Legion::Extensions::Node::Transport::Messages::ClusterSettings, publish: nil))
+      runner.broadcast_settings(settings: { feature: true })
+    end
+
+    it 'passes a custom routing_key through' do
+      expect(Legion::Extensions::Node::Transport::Messages::ClusterSettings).to receive(:new).with(
+        hash_including(routing_key: 'flags.beta')
+      ).and_return(instance_double(Legion::Extensions::Node::Transport::Messages::ClusterSettings, publish: nil))
+      runner.broadcast_settings(settings: { feature: true }, routing_key: 'flags.beta')
+    end
+
+    it 'passes restart: true when specified' do
+      expect(Legion::Extensions::Node::Transport::Messages::ClusterSettings).to receive(:new).with(
+        hash_including(restart: true)
+      ).and_return(instance_double(Legion::Extensions::Node::Transport::Messages::ClusterSettings, publish: nil))
+      runner.broadcast_settings(settings: { feature: true }, restart: true)
+    end
+
+    context 'when publish raises an error' do
+      before do
+        allow(Legion::Extensions::Node::Transport::Messages::ClusterSettings).to receive(:new).and_raise(
+          StandardError, 'publish failed'
+        )
+      end
+
+      it 'does not crash' do
+        expect { runner.broadcast_settings(settings: { feature: true }) }.not_to raise_error
+      end
+
+      it 'returns an empty hash' do
+        result = runner.broadcast_settings(settings: { feature: true })
+        expect(result).to eq({})
+      end
+    end
+  end
+
+  describe '#killswitch' do
+    before do
+      @settings_store[:client] = { name: 'test-node' }
+      allow(Legion::Extensions::Node::Transport::Messages::ClusterKillswitch).to receive(:new).and_return(
+        instance_double(Legion::Extensions::Node::Transport::Messages::ClusterKillswitch, publish: nil)
+      )
+    end
+
+    it 'publishes a ClusterKillswitch message' do
+      expect(Legion::Extensions::Node::Transport::Messages::ClusterKillswitch).to receive(:new)
+      runner.killswitch(extension: 'bad-ext')
+    end
+
+    it 'returns an empty hash' do
+      result = runner.killswitch(extension: 'bad-ext')
+      expect(result).to eq({})
+    end
+
+    it 'strips the lex- prefix from the extension name' do
+      expect(Legion::Extensions::Node::Transport::Messages::ClusterKillswitch).to receive(:new).with(
+        extension: 'bad-ext'
+      ).and_return(instance_double(Legion::Extensions::Node::Transport::Messages::ClusterKillswitch, publish: nil))
+      runner.killswitch(extension: 'lex-bad-ext')
+    end
+
+    it 'passes extension without prefix unchanged' do
+      expect(Legion::Extensions::Node::Transport::Messages::ClusterKillswitch).to receive(:new).with(
+        extension: 'bad-ext'
+      ).and_return(instance_double(Legion::Extensions::Node::Transport::Messages::ClusterKillswitch, publish: nil))
+      runner.killswitch(extension: 'bad-ext')
+    end
+
+    context 'when publish raises an error' do
+      before do
+        allow(Legion::Extensions::Node::Transport::Messages::ClusterKillswitch).to receive(:new).and_raise(
+          StandardError, 'killswitch failed'
+        )
+      end
+
+      it 'does not crash' do
+        expect { runner.killswitch(extension: 'bad-ext') }.not_to raise_error
+      end
+
+      it 'returns an empty hash' do
+        result = runner.killswitch(extension: 'bad-ext')
+        expect(result).to eq({})
       end
     end
   end
