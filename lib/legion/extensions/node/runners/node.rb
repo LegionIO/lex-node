@@ -120,6 +120,30 @@ module Legion
                                                                          public_key: public_key)
           end
 
+          def broadcast_settings(settings:, routing_key: 'settings', restart: false, **_opts)
+            log.debug "broadcast_settings: routing_key=#{routing_key} keys=#{settings.keys.join(', ')}"
+            Legion::Extensions::Node::Transport::Messages::ClusterSettings.new(
+              settings:    settings,
+              routing_key: routing_key,
+              restart:     restart
+            ).publish
+            {}
+          rescue StandardError => e
+            log.error "broadcast_settings failed: #{e.message}"
+            {}
+          end
+
+          def killswitch(extension:, **_opts)
+            log.debug "killswitch: blocking extension #{extension} cluster-wide"
+            Legion::Extensions::Node::Transport::Messages::ClusterKillswitch.new(
+              extension: extension.to_s.delete_prefix('lex-')
+            ).publish
+            {}
+          rescue StandardError => e
+            log.error "killswitch failed: #{e.message}"
+            {}
+          end
+
           private
 
           def publish_update_result(action:, status:, detail: nil, error: nil)
