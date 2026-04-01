@@ -5,10 +5,14 @@ module Legion
     module Node
       module Transport
         module Exchanges
-          class ClusterControl
-            EXCHANGE_NAME = 'legion.cluster.control'
-            EXCHANGE_TYPE = :topic
-            EXCHANGE_OPTIONS = { durable: true }.freeze
+          class ClusterControl < Legion::Transport::Exchange
+            def exchange_name
+              'legion.cluster.control'
+            end
+
+            def default_type
+              'topic'
+            end
           end
         end
       end

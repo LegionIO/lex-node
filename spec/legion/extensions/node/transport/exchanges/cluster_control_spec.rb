@@ -4,21 +4,19 @@ require 'spec_helper'
 require 'legion/extensions/node/transport/exchanges/cluster_control'
 
 RSpec.describe Legion::Extensions::Node::Transport::Exchanges::ClusterControl do
-  describe 'constants' do
+  it 'inherits from Legion::Transport::Exchange' do
+    expect(described_class).to be < Legion::Transport::Exchange
+  end
+
+  describe 'instance methods' do
+    let(:instance) { described_class.allocate }
+
     it 'has the correct exchange name' do
-      expect(described_class::EXCHANGE_NAME).to eq('legion.cluster.control')
+      expect(instance.exchange_name).to eq('legion.cluster.control')
     end
 
     it 'uses topic exchange type' do
-      expect(described_class::EXCHANGE_TYPE).to eq(:topic)
-    end
-
-    it 'is durable' do
-      expect(described_class::EXCHANGE_OPTIONS).to include(durable: true)
-    end
-
-    it 'options are frozen' do
-      expect(described_class::EXCHANGE_OPTIONS).to be_frozen
+      expect(instance.default_type).to eq('topic')
     end
   end
 end

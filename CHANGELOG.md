@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.7] - 2026-03-31
+
+### Fixed
+- `ClusterControl` exchange now inherits from `Legion::Transport::Exchange` instead of being a bare PORO with constants, fixing `NOT_FOUND` error during autobuild queue binding
+
 ## [0.3.6] - 2026-03-31
 
 ### Added
