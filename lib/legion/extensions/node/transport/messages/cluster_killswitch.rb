@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'legion/extensions/node/control_auth'
+
 module Legion
   module Extensions
     module Node
@@ -25,11 +27,11 @@ module Legion
             end
 
             def message
-              {
+              Legion::Extensions::Node::ControlAuth.sign(
                 function: 'update_settings',
                 settings: { extensions: { blocked: [@options[:extension]] } },
                 restart:  true
-              }
+              )
             end
 
             def validate

@@ -8,6 +8,10 @@ unless defined?(Legion::Extensions::Actors::Subscription)
       module Actors
         class Subscription
           def initialize(**); end
+
+          def process_message(message, _metadata, _delivery_info)
+            [:processed, message]
+          end
         end
       end
     end
@@ -83,6 +87,19 @@ RSpec.describe Legion::Extensions::Node::Actor::ClusterControl do
   describe '#generate_task?' do
     it 'returns false' do
       expect(call(:generate_task?)).to be false
+    end
+  end
+
+  describe '#process_message' do
+    it 'verifies the incoming payload before dispatching to the subscription handler' do
+      raw_message = { function: 'update_settings' }
+      verified_message = { function: 'update_settings', control: { verified: true } }
+      allow(Legion::Extensions::Node::ControlAuth).to receive(:verify!)
+        .with(raw_message).and_return(verified_message)
+
+      result = instance.process_message(raw_message, double('metadata'), double('delivery_info'))
+
+      expect(result).to eq([:processed, verified_message])
     end
   end
 end

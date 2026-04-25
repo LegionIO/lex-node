@@ -66,8 +66,8 @@ RSpec.describe Legion::Extensions::Node::Actor::Beat do
   end
 
   describe '#run_now?' do
-    it 'returns true' do
-      expect(call(:run_now?)).to be true
+    it 'returns false so heartbeat/reconcile does not run before extension boot completes' do
+      expect(call(:run_now?)).to be false
     end
   end
 

@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.8] - 2026-04-25
+
+### Added
+- Configurable cluster-control payload signing via `extensions.node.cluster_control.auth.mode` (`auto`, `required`, `disabled`), with timestamp freshness and nonce format validation when signing is active.
+
+### Changed
+- `ClusterControl` queues now read durability and retention settings from `extensions.node.cluster_control.queue`; defaults remain durable and non-auto-delete so per-node commands survive node restarts.
+- Beat no longer runs immediately at actor construction, avoiding startup reconciliation before extension boot completes.
+- `update_gem` now installs through `Legion::Extensions::GemSource` and calls extension-scoped reload instead of full daemon reload.
+
 ## [0.3.7] - 2026-03-31
 
 ### Fixed

@@ -314,31 +314,39 @@ RSpec.describe Legion::Extensions::Node::Runners::Node do
   describe '#update_gem' do
     before do
       @settings_store[:client] = { name: 'test-node' }
+      gem_source = Module.new do
+        def self.install_gem(*) = { success: true, output: 'installed' }
+      end
+      stub_const('Legion::Extensions::GemSource', gem_source)
+      allow(Legion::Extensions::GemSource).to receive(:install_gem).and_return({ success: true, output: 'installed' })
       allow(Gem).to receive(:install)
       allow(Legion).to receive(:reload)
+      allow(Legion::Extensions).to receive(:reload_extension).and_return(true)
       allow(Legion::Extensions::Node::Transport::Messages::UpdateResult).to receive(:new).and_return(
         instance_double(Legion::Extensions::Node::Transport::Messages::UpdateResult, publish: nil)
       )
     end
 
-    it 'calls Gem.install with the normalized extension name and version' do
+    it 'installs through the configured GemSource with the normalized extension name and version' do
       runner.update_gem(extension: 'github', version: '0.3.0')
-      expect(Gem).to have_received(:install).with('lex-github', '0.3.0')
+      expect(Legion::Extensions::GemSource).to have_received(:install_gem).with('lex-github', version: '0.3.0')
+      expect(Gem).not_to have_received(:install)
     end
 
     it 'normalizes extension name that already has lex- prefix' do
       runner.update_gem(extension: 'lex-github', version: '0.3.0')
-      expect(Gem).to have_received(:install).with('lex-github', '0.3.0')
+      expect(Legion::Extensions::GemSource).to have_received(:install_gem).with('lex-github', version: '0.3.0')
     end
 
     it 'passes nil version for latest' do
       runner.update_gem(extension: 'github')
-      expect(Gem).to have_received(:install).with('lex-github', nil)
+      expect(Legion::Extensions::GemSource).to have_received(:install_gem).with('lex-github', version: nil)
     end
 
-    it 'calls Legion.reload when reload is true' do
+    it 'calls extension-scoped reload when reload is true' do
       runner.update_gem(extension: 'github', reload: true)
-      expect(Legion).to have_received(:reload)
+      expect(Legion::Extensions).to have_received(:reload_extension).with('lex-github')
+      expect(Legion).not_to have_received(:reload)
     end
 
     it 'does not call Legion.reload when reload is false' do
@@ -353,8 +361,8 @@ RSpec.describe Legion::Extensions::Node::Runners::Node do
       runner.update_gem(extension: 'github', version: '0.3.0')
     end
 
-    context 'when Gem.install raises an error' do
-      before { allow(Gem).to receive(:install).and_raise(Gem::InstallError, 'network timeout') }
+    context 'when install_gem returns a failed result' do
+      before { allow(Legion::Extensions::GemSource).to receive(:install_gem).and_return({ success: false, output: 'network timeout' }) }
 
       it 'does not crash' do
         expect { runner.update_gem(extension: 'github') }.not_to raise_error
