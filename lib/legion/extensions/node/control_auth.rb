@@ -3,12 +3,13 @@
 require 'openssl'
 require 'securerandom'
 require 'json'
+require 'legion/extensions/node/config'
 
 module Legion
   module Extensions
     module Node
       module ControlAuth
-        MAX_SKEW_SECONDS = 300
+        AUTH_MODES = %w[auto required disabled].freeze
 
         class UnauthorizedControlMessage < StandardError; end
 
@@ -16,10 +17,12 @@ module Legion
 
         def sign(payload)
           normalized = deep_symbolize(payload).dup
+          return normalized unless sign_control_messages?
+
           control = {
             sender:    node_name,
             timestamp: Time.now.utc.to_i,
-            nonce:     SecureRandom.hex(16)
+            nonce:     SecureRandom.hex(nonce_bytes)
           }
           normalized[:control] = control.merge(signature: signature_for(normalized.merge(control: control)))
           normalized
@@ -28,6 +31,7 @@ module Legion
         def verify!(payload)
           normalized = deep_symbolize(payload)
           raise UnauthorizedControlMessage, 'missing control signature' unless normalized.is_a?(Hash)
+          return normalized unless verify_control_messages?
 
           control = normalized[:control]
           raise UnauthorizedControlMessage, 'missing control signature' unless control.is_a?(Hash)
@@ -45,13 +49,50 @@ module Legion
           normalized
         end
 
+        def sign_control_messages?
+          return false if auth_disabled?
+          return true if auth_required?
+
+          !secret.to_s.empty?
+        end
+
+        def verify_control_messages?
+          return false if auth_disabled?
+          return true if auth_required?
+
+          !secret.to_s.empty?
+        end
+
+        def auth_mode
+          configured = auth_settings[:mode] || auth_settings[:enabled]
+          mode = case configured
+                 when true then 'required'
+                 when false then 'disabled'
+                 else configured.to_s
+                 end
+          AUTH_MODES.include?(mode) ? mode : 'auto'
+        end
+
+        def auth_required?
+          auth_mode == 'required'
+        end
+
+        def auth_disabled?
+          auth_mode == 'disabled'
+        end
+
+        def auth_settings
+          Legion::Extensions::Node::Config.control_auth
+        end
+
         def secret
           configured_secret || ENV.fetch('LEGION_NODE_CONTROL_SECRET', nil)
         end
 
         def configured_secret
           if defined?(Legion::Settings) && Legion::Settings.respond_to?(:dig)
-            Legion::Settings.dig(:cluster, :control_secret) ||
+            auth_settings[:secret] ||
+              Legion::Settings.dig(:cluster, :control_secret) ||
               Legion::Settings.dig(:crypt, :cluster_secret)
           end
         rescue StandardError => e
@@ -98,14 +139,29 @@ module Legion
 
         def fresh_timestamp?(timestamp)
           ts = Integer(timestamp)
-          (Time.now.utc.to_i - ts).abs <= MAX_SKEW_SECONDS
+          (Time.now.utc.to_i - ts).abs <= timestamp_skew_seconds
         rescue ArgumentError, TypeError => e
           log.debug("control timestamp validation failed: #{e.message}")
           false
         end
 
+        def timestamp_skew_seconds
+          Integer(auth_settings[:timestamp_skew_seconds])
+        rescue ArgumentError, TypeError => e
+          log.debug("control timestamp skew setting invalid: #{e.message}")
+          300
+        end
+
+        def nonce_bytes
+          bytes = Integer(auth_settings[:nonce_bytes])
+          bytes.positive? ? bytes : 16
+        rescue ArgumentError, TypeError => e
+          log.debug("control nonce byte setting invalid: #{e.message}")
+          16
+        end
+
         def valid_nonce?(nonce)
-          nonce.to_s.match?(/\A[0-9a-f]{32}\z/i)
+          nonce.to_s.match?(/\A[0-9a-f]{#{nonce_bytes * 2}}\z/i)
         end
 
         def secure_compare(left, right)

@@ -47,8 +47,9 @@ RSpec.describe 'ClusterSettings message' do
   subject(:msg) { CLUSTER_SETTINGS_TEST_CLASS.new(settings: settings_hash) }
 
   before do
+    allow(Legion::Settings).to receive(:dig).and_return(nil)
+    allow(Legion::Settings).to receive(:dig).with(:extensions, :node).and_return({})
     allow(Legion::Settings).to receive(:dig).with(:cluster, :control_secret).and_return('shared-secret')
-    allow(Legion::Settings).to receive(:dig).with(:crypt, :cluster_secret).and_return(nil)
     allow(Legion::Settings).to receive(:[]).with(:client).and_return({ name: 'sender-node' })
   end
 
@@ -114,6 +115,12 @@ RSpec.describe 'ClusterSettings message' do
       second = CLUSTER_SETTINGS_TEST_CLASS.new(settings: { feature: false }).message
 
       expect(first[:control][:signature]).not_to eq(second[:control][:signature])
+    end
+
+    it 'omits the control signature envelope in auto mode when no secret is configured' do
+      allow(Legion::Settings).to receive(:dig).with(:cluster, :control_secret).and_return(nil)
+
+      expect(msg.message).not_to include(:control)
     end
   end
 

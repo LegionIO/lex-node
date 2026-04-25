@@ -68,6 +68,37 @@ Each node periodically calls `beat` to broadcast its presence. On startup, nodes
 
 Dynamic config changes (`update_settings`) and gem upgrades (`update_gem`) can be pushed to individual nodes or broadcast to all nodes at runtime. Both operations publish an `UpdateResult` message to `node.<name>.update_result` so the outcome can be observed cluster-wide.
 
+### Cluster Control Settings
+
+Cluster-control broadcasts are configurable under `extensions.node.cluster_control`. By default, auth mode is `auto`: messages are signed and verified when a shared secret is configured, and unsigned messages are allowed when no secret exists for simpler local or homelab deployments.
+
+```json
+{
+  "extensions": {
+    "node": {
+      "cluster_control": {
+        "auth": {
+          "mode": "auto",
+          "timestamp_skew_seconds": 300,
+          "nonce_bytes": 16
+        },
+        "queue": {
+          "durable": true,
+          "exclusive": false,
+          "auto_delete": false,
+          "queue_type": "classic",
+          "expires_ms": 604800000,
+          "message_ttl_ms": 86400000,
+          "max_length": 1000
+        }
+      }
+    }
+  }
+}
+```
+
+Set `auth.mode` to `required` to force HMAC signatures, or `disabled` to run without cluster-control signatures even when a shared secret is present.
+
 ## Transport
 
 - **Exchange**: `node` (topic exchange)
