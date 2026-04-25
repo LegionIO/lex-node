@@ -361,7 +361,7 @@ RSpec.describe Legion::Extensions::Node::Runners::Node do
       runner.update_gem(extension: 'github', version: '0.3.0')
     end
 
-    context 'when Gem.install raises an error' do
+    context 'when install_gem returns a failed result' do
       before { allow(Legion::Extensions::GemSource).to receive(:install_gem).and_return({ success: false, output: 'network timeout' }) }
 
       it 'does not crash' do

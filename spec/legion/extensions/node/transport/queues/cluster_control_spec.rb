@@ -11,7 +11,12 @@ CLUSTER_CONTROL_QUEUE_TEST_CLASS = Class.new do
 
   def queue_options
     { durable: true, exclusive: false, auto_delete: false,
-      arguments: { 'x-queue-type': 'classic' } }
+      arguments: {
+        'x-queue-type':  'classic',
+        'x-expires':     604_800_000,
+        'x-message-ttl': 86_400_000,
+        'x-max-length':  1000
+      } }
   end
 end
 
@@ -43,6 +48,14 @@ RSpec.describe 'ClusterControl queue' do
 
     it 'uses classic queue type' do
       expect(queue.queue_options[:arguments][:'x-queue-type']).to eq('classic')
+    end
+
+    it 'expires abandoned per-node queues and stale commands' do
+      expect(queue.queue_options[:arguments]).to include(
+        'x-expires':     604_800_000,
+        'x-message-ttl': 86_400_000,
+        'x-max-length':  1000
+      )
     end
   end
 end

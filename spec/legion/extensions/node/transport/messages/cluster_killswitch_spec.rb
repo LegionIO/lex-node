@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'legion/extensions/node/control_auth'
 require 'legion/extensions/node/transport/exchanges/cluster_control'
 
 CLUSTER_KILLSWITCH_ROUTING_KEY = 'settings.extensions.blocked'
@@ -28,11 +29,11 @@ CLUSTER_KILLSWITCH_TEST_CLASS = Class.new do
   end
 
   def message
-    {
+    Legion::Extensions::Node::ControlAuth.sign(
       function: 'update_settings',
       settings: { extensions: { blocked: [@options[:extension]] } },
       restart:  true
-    }
+    )
   end
 
   def validate
@@ -44,6 +45,12 @@ end
 
 RSpec.describe 'ClusterKillswitch message' do
   subject(:msg) { CLUSTER_KILLSWITCH_TEST_CLASS.new(extension: 'my-ext') }
+
+  before do
+    allow(Legion::Settings).to receive(:dig).with(:cluster, :control_secret).and_return('shared-secret')
+    allow(Legion::Settings).to receive(:dig).with(:crypt, :cluster_secret).and_return(nil)
+    allow(Legion::Settings).to receive(:[]).with(:client).and_return({ name: 'sender-node' })
+  end
 
   describe 'routing key constant' do
     it 'is settings.extensions.blocked' do
@@ -86,6 +93,21 @@ RSpec.describe 'ClusterKillswitch message' do
 
     it 'wraps extension in a blocked array' do
       expect(msg.message[:settings][:extensions][:blocked]).to eq(['my-ext'])
+    end
+
+    it 'includes a verifiable control signature envelope' do
+      payload = msg.message
+
+      expect(payload[:control]).to include(:sender, :timestamp, :nonce, :signature)
+      expect(Legion::Extensions::Node::ControlAuth.verify!(payload)).to eq(payload)
+    end
+
+    it 'rejects tampered signed payloads' do
+      payload = msg.message
+      payload[:settings] = { extensions: { blocked: ['other-ext'] } }
+
+      expect { Legion::Extensions::Node::ControlAuth.verify!(payload) }
+        .to raise_error(Legion::Extensions::Node::ControlAuth::UnauthorizedControlMessage)
     end
   end
 

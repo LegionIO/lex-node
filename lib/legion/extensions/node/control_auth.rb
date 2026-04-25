@@ -27,12 +27,15 @@ module Legion
 
         def verify!(payload)
           normalized = deep_symbolize(payload)
+          raise UnauthorizedControlMessage, 'missing control signature' unless normalized.is_a?(Hash)
+
           control = normalized[:control]
           raise UnauthorizedControlMessage, 'missing control signature' unless control.is_a?(Hash)
 
           signature = control[:signature].to_s
           raise UnauthorizedControlMessage, 'missing control signature' if signature.empty?
           raise UnauthorizedControlMessage, 'stale control message' unless fresh_timestamp?(control[:timestamp])
+          raise UnauthorizedControlMessage, 'invalid control nonce' unless valid_nonce?(control[:nonce])
 
           unsigned_control = control.dup
           unsigned_control.delete(:signature)
@@ -99,6 +102,10 @@ module Legion
         rescue ArgumentError, TypeError => e
           log.debug("control timestamp validation failed: #{e.message}")
           false
+        end
+
+        def valid_nonce?(nonce)
+          nonce.to_s.match?(/\A[0-9a-f]{32}\z/i)
         end
 
         def secure_compare(left, right)

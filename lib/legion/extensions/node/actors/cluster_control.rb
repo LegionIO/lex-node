@@ -32,7 +32,8 @@ module Legion
           end
 
           def process_message(message, metadata, delivery_info)
-            Legion::Extensions::Node::ControlAuth.verify!(super)
+            verified_message = Legion::Extensions::Node::ControlAuth.verify!(message)
+            super(verified_message, metadata, delivery_info)
           end
         end
       end

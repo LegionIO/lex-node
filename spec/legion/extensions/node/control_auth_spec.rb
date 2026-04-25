@@ -22,6 +22,19 @@ RSpec.describe Legion::Extensions::Node::ControlAuth do
       .to raise_error(Legion::Extensions::Node::ControlAuth::UnauthorizedControlMessage)
   end
 
+  it 'rejects malformed payloads predictably' do
+    expect { described_class.verify!(nil) }
+      .to raise_error(Legion::Extensions::Node::ControlAuth::UnauthorizedControlMessage, 'missing control signature')
+  end
+
+  it 'rejects payloads without a valid nonce' do
+    payload = described_class.sign(function: 'update_settings', settings: { feature: true })
+    payload[:control] = payload[:control].merge(nonce: '')
+
+    expect { described_class.verify!(payload) }
+      .to raise_error(Legion::Extensions::Node::ControlAuth::UnauthorizedControlMessage, 'invalid control nonce')
+  end
+
   it 'rejects tampered payloads' do
     payload = described_class.sign(function: 'update_settings', settings: { feature: true })
     payload[:settings] = { feature: false }

@@ -3,7 +3,7 @@
 ## [0.3.8] - 2026-04-25
 
 ### Added
-- Signed cluster-control payloads with timestamp/nonce validation for settings and killswitch broadcasts.
+- Signed cluster-control payloads with timestamp freshness and nonce format validation for settings and killswitch broadcasts.
 
 ### Changed
 - `ClusterControl` queues are now durable and non-auto-delete so per-node commands survive node restarts.

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'legion/extensions/node/control_auth'
 require 'legion/extensions/node/transport/exchanges/cluster_control'
 
 # Mirror ClusterSettings message logic in a proxy class to avoid superclass mismatch.
@@ -26,11 +27,11 @@ CLUSTER_SETTINGS_TEST_CLASS = Class.new do
   end
 
   def message
-    {
+    Legion::Extensions::Node::ControlAuth.sign(
       function: 'update_settings',
       settings: @options[:settings],
       restart:  @options.fetch(:restart, false)
-    }
+    )
   end
 
   def validate
@@ -44,6 +45,12 @@ RSpec.describe 'ClusterSettings message' do
   let(:settings_hash) { { feature_flags: { new_feature: true } } }
 
   subject(:msg) { CLUSTER_SETTINGS_TEST_CLASS.new(settings: settings_hash) }
+
+  before do
+    allow(Legion::Settings).to receive(:dig).with(:cluster, :control_secret).and_return('shared-secret')
+    allow(Legion::Settings).to receive(:dig).with(:crypt, :cluster_secret).and_return(nil)
+    allow(Legion::Settings).to receive(:[]).with(:client).and_return({ name: 'sender-node' })
+  end
 
   describe '#routing_key' do
     it 'defaults to "settings"' do
@@ -90,6 +97,23 @@ RSpec.describe 'ClusterSettings message' do
     it 'passes restart: true when specified' do
       m = CLUSTER_SETTINGS_TEST_CLASS.new(settings: settings_hash, restart: true)
       expect(m.message[:restart]).to be true
+    end
+
+    it 'includes a verifiable control signature envelope' do
+      payload = msg.message
+
+      expect(payload[:control]).to include(:sender, :timestamp, :nonce, :signature)
+      expect(Legion::Extensions::Node::ControlAuth.verify!(payload)).to eq(payload)
+    end
+
+    it 'changes the signature when the settings payload changes' do
+      allow(SecureRandom).to receive(:hex).with(16).and_return('a' * 32)
+      allow(Time).to receive(:now).and_return(Time.utc(2026, 1, 1))
+
+      first = CLUSTER_SETTINGS_TEST_CLASS.new(settings: { feature: true }).message
+      second = CLUSTER_SETTINGS_TEST_CLASS.new(settings: { feature: false }).message
+
+      expect(first[:control][:signature]).not_to eq(second[:control][:signature])
     end
   end
 

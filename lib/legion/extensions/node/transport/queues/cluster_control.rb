@@ -12,7 +12,12 @@ module Legion
 
             def queue_options
               { durable: true, exclusive: false, auto_delete: false,
-                arguments: { 'x-queue-type': 'classic' } }
+                arguments: {
+                  'x-queue-type':  'classic',
+                  'x-expires':     604_800_000,
+                  'x-message-ttl': 86_400_000,
+                  'x-max-length':  1000
+                } }
             end
           end
         end
