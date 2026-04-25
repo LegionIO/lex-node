@@ -10,7 +10,7 @@ CLUSTER_CONTROL_QUEUE_TEST_CLASS = Class.new do
   end
 
   def queue_options
-    { durable: false, exclusive: false, auto_delete: true,
+    { durable: true, exclusive: false, auto_delete: false,
       arguments: { 'x-queue-type': 'classic' } }
   end
 end
@@ -29,16 +29,16 @@ RSpec.describe 'ClusterControl queue' do
   end
 
   describe '#queue_options' do
-    it 'is not durable' do
-      expect(queue.queue_options[:durable]).to be false
+    it 'is durable so offline nodes can receive queued desired-state commands after restart' do
+      expect(queue.queue_options[:durable]).to be true
     end
 
     it 'is not exclusive' do
       expect(queue.queue_options[:exclusive]).to be false
     end
 
-    it 'auto-deletes when node disconnects' do
-      expect(queue.queue_options[:auto_delete]).to be true
+    it 'does not auto-delete when node disconnects' do
+      expect(queue.queue_options[:auto_delete]).to be false
     end
 
     it 'uses classic queue type' do

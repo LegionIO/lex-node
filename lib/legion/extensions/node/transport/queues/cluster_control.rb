@@ -11,7 +11,7 @@ module Legion
             end
 
             def queue_options
-              { durable: false, exclusive: false, auto_delete: true,
+              { durable: true, exclusive: false, auto_delete: false,
                 arguments: { 'x-queue-type': 'classic' } }
             end
           end

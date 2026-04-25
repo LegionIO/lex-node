@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.8] - 2026-04-25
+
+### Added
+- Signed cluster-control payloads with timestamp/nonce validation for settings and killswitch broadcasts.
+
+### Changed
+- `ClusterControl` queues are now durable and non-auto-delete so per-node commands survive node restarts.
+- Beat no longer runs immediately at actor construction, avoiding startup reconciliation before extension boot completes.
+- `update_gem` now installs through `Legion::Extensions::GemSource` and calls extension-scoped reload instead of full daemon reload.
+
 ## [0.3.7] - 2026-03-31
 
 ### Fixed

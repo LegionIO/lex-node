@@ -28,8 +28,10 @@ module Legion
             gem_name = "lex-#{name}"
             log.debug "update_gem: installing #{gem_name} #{version || 'latest'}"
 
-            Gem.install(gem_name, version)
-            Legion.reload if reload
+            install_result = install_extension_gem(gem_name, version)
+            raise Gem::InstallError, install_result[:output].to_s unless install_result[:success]
+
+            reload_extension(gem_name) if reload
 
             publish_update_result(action: 'update_gem', status: 'success', detail: "#{gem_name} #{version || 'latest'}")
           rescue StandardError => e
@@ -145,6 +147,20 @@ module Legion
           end
 
           private
+
+          def install_extension_gem(gem_name, version)
+            require 'legion/extensions/gem_source' unless defined?(Legion::Extensions::GemSource) # rubocop:disable Legion/HelperMigration/RequireDefinedGuard
+
+            Legion::Extensions::GemSource.install_gem(gem_name, version: version)
+          rescue LoadError => e
+            { success: false, output: "GemSource unavailable: #{e.message}" }
+          end
+
+          def reload_extension(gem_name)
+            raise 'extension-scoped reload is unavailable' unless defined?(Legion::Extensions) && Legion::Extensions.respond_to?(:reload_extension)
+
+            Legion::Extensions.reload_extension(gem_name)
+          end
 
           def publish_update_result(action:, status:, detail: nil, error: nil)
             Legion::Extensions::Node::Transport::Messages::UpdateResult.new(

@@ -22,7 +22,7 @@ module Legion
           end
 
           def run_now?
-            true
+            false
           end
 
           def time
